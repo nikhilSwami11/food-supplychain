@@ -36,8 +36,7 @@ This project is built using the standard Ethereum development stack.
 4.  **MetaMask:** The browser extension is required for interacting with the DApp (client-side).
 5.  **Clone Repository:** Clone the project locally:
     ```bash
-    git clone [YOUR-REPOSITORY-LINK]
-    cd supply-chain
+    git clone https://github.com/nikhilSwami11/food-supplychain.git
     ```
 6.  **Compile & Deploy:** Start Ganache and then run the standard migration process:
     ```bash
