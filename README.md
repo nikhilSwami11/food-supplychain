@@ -8,7 +8,7 @@ The core of the system is the **SupplyChain.sol** smart contract, which consolid
 
 ## 1. Project Description
 
-The system is organized into three interconnected, logical modules:
+The system is organized into three interconnected, logical modules, listed below:
 
 1.  **Traceability System:** Tracks the location and movement of each product via a unique serial ID.
 2.  **Trading Mechanism:** Allows for secure, cryptographically verifiable transfer of product ownership between verified stakeholders (e.g., Farmer to Distributor).
