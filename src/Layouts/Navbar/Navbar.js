@@ -4,10 +4,7 @@ import { useAuth } from '../../Services/Contexts/AuthContext';
 import { useContract } from '../../Services/Contexts/ContractContext';
 import './Navbar.css';
 
-/**
- * Navigation Bar Component
- * Displays navigation links and wallet connection
- */
+
 const Navbar = () => {
   const { account, isConnected, connectWallet, disconnectWallet } = useAuth();
   const { isAdmin, isFarmer } = useContract();

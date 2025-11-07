@@ -2,10 +2,7 @@ import React, { useState } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 import { useContract } from '../../Services/Contexts/ContractContext';
 
-/**
- * Transfer Ownership Modal
- * Form to transfer product ownership
- */
+
 const TransferOwnershipModal = ({ show, onHide, productId }) => {
   const { transferOwnership } = useContract();
   const [newOwner, setNewOwner] = useState('');

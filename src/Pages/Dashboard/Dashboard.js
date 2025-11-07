@@ -6,7 +6,6 @@ import './Dashboard.css';
 
 /**
  * Dashboard Page
- * Main overview page with statistics and quick actions
  */
 const Dashboard = () => {
   const { account, isConnected } = useAuth();

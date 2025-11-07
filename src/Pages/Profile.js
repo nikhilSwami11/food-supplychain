@@ -4,7 +4,7 @@ import { useContract } from '../Services/Contexts/ContractContext';
 
 /**
  * Profile Page
- * Display user information and role
+
  */
 const Profile = () => {
   const { account, isConnected, networkId } = useAuth();

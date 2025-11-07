@@ -1,9 +1,6 @@
 import { getWeb3 } from './web3Utils';
 
-/**
- * Contract Utilities for smart contract interaction
- * Handles contract initialization and function calls
- */
+
 
 let contractInstance = null;
 

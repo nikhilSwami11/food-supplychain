@@ -12,10 +12,6 @@ import {
   getContractOwner as getContractOwnerUtil
 } from '../Utils/contractUtils';
 
-/**
- * Contract Context
- * Manages smart contract interactions
- */
 
 const ContractContext = createContext();
 
@@ -36,13 +32,11 @@ export const ContractProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Contract ABI and Address (to be updated after deployment)
-  const CONTRACT_ABI = []; // Add your contract ABI here
-  const CONTRACT_ADDRESS = ''; // Add your deployed contract address here
+  
+  const CONTRACT_ABI = []; 
+  const CONTRACT_ADDRESS = ''; 
 
-  /**
-   * Initialize contract on wallet connection
-   */
+ 
   useEffect(() => {
     if (isConnected && web3 && CONTRACT_ABI.length > 0 && CONTRACT_ADDRESS) {
       try {
@@ -55,19 +49,17 @@ export const ContractProvider = ({ children }) => {
     }
   }, [isConnected, web3]);
 
-  /**
-   * Check user roles
-   */
+  
   useEffect(() => {
     const checkRoles = async () => {
       if (contract && account) {
         try {
-          // Check if user is contract owner (admin)
+          
           const owner = await getContractOwnerUtil();
           setContractOwner(owner);
           setIsAdmin(owner.toLowerCase() === account.toLowerCase());
 
-          // Check if user is verified farmer
+          
           const farmerStatus = await isVerifiedFarmerUtil(account);
           setIsFarmer(farmerStatus);
         } catch (err) {
@@ -79,9 +71,7 @@ export const ContractProvider = ({ children }) => {
     checkRoles();
   }, [contract, account]);
 
-  /**
-   * Register a new product
-   */
+  
   const registerProduct = async (productId, productName, origin) => {
     setIsLoading(true);
     setError(null);
@@ -97,9 +87,7 @@ export const ContractProvider = ({ children }) => {
     }
   };
 
-  /**
-   * Transfer product ownership
-   */
+  
   const transferOwnership = async (productId, newOwner) => {
     setIsLoading(true);
     setError(null);
@@ -115,9 +103,7 @@ export const ContractProvider = ({ children }) => {
     }
   };
 
-  /**
-   * Get product details
-   */
+  
   const getProduct = async (productId) => {
     setIsLoading(true);
     setError(null);
@@ -133,9 +119,7 @@ export const ContractProvider = ({ children }) => {
     }
   };
 
-  /**
-   * Get product history
-   */
+  
   const getProductHistory = async (productId) => {
     setIsLoading(true);
     setError(null);
@@ -151,9 +135,7 @@ export const ContractProvider = ({ children }) => {
     }
   };
 
-  /**
-   * Verify product
-   */
+ 
   const verifyProduct = async (productId) => {
     setIsLoading(true);
     setError(null);
@@ -169,9 +151,7 @@ export const ContractProvider = ({ children }) => {
     }
   };
 
-  /**
-   * Set farmer role (Admin only)
-   */
+  
   const setFarmerRole = async (userAddress) => {
     setIsLoading(true);
     setError(null);

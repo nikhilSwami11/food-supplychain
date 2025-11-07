@@ -2,10 +2,7 @@ import React, { useState } from 'react';
 import { Modal, Button, Badge } from 'react-bootstrap';
 import TransferOwnershipModal from './TransferOwnershipModal';
 
-/**
- * Product Details Modal
- * Display complete product information and history
- */
+
 const ProductDetailsModal = ({ show, onHide, product }) => {
   const [showTransferModal, setShowTransferModal] = useState(false);
 

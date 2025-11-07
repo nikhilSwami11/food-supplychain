@@ -7,7 +7,6 @@ import './Products.css';
 
 /**
  * Products Page
- * Browse, search, and trace products
  */
 const Products = () => {
   const { isConnected } = useAuth();

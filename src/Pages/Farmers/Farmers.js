@@ -4,7 +4,6 @@ import './Farmers.css';
 
 /**
  * Farmers Page
- * View registered and verified farmers
  */
 const Farmers = () => {
   const { isConnected } = useAuth();

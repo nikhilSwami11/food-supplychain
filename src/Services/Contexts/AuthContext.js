@@ -24,9 +24,7 @@ export const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  /**
-   * Connect to MetaMask wallet
-   */
+  
   const connectWallet = async () => {
     setIsLoading(true);
     setError(null);
@@ -39,7 +37,7 @@ export const AuthProvider = ({ children }) => {
       setNetworkId(netId);
       setIsConnected(true);
       
-      // Store connection status in localStorage
+     
       localStorage.setItem('walletConnected', 'true');
       
       return { success: true, account: userAccount };
@@ -52,9 +50,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  /**
-   * Disconnect wallet
-   */
+  
   const disconnectWallet = () => {
     setAccount(null);
     setWeb3(null);
@@ -63,9 +59,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('walletConnected');
   };
 
-  /**
-   * Handle account change
-   */
+  
   const handleAccountChange = (newAccount) => {
     if (newAccount) {
       setAccount(newAccount);
@@ -74,17 +68,13 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  /**
-   * Handle network change
-   */
+  
   const handleNetworkChange = (chainId) => {
-    // Reload page on network change
+    
     window.location.reload();
   };
 
-  /**
-   * Auto-connect on mount if previously connected
-   */
+  
   useEffect(() => {
     const wasConnected = localStorage.getItem('walletConnected');
     if (wasConnected === 'true') {
@@ -92,9 +82,7 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  /**
-   * Setup event listeners
-   */
+ 
   useEffect(() => {
     if (isConnected) {
       onAccountChange(handleAccountChange);

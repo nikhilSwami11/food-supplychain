@@ -4,8 +4,7 @@ import { useContract } from '../../Services/Contexts/ContractContext';
 import './Admin.css';
 
 /**
- * Admin Page
- * Verify farmers and manage the system (Admin only)
+ * Verify farmers 
  */
 const Admin = () => {
   const { isConnected } = useAuth();

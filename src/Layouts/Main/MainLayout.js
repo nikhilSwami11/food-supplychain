@@ -3,10 +3,7 @@ import { Outlet } from 'react-router-dom';
 import Navbar from '../Navbar/Navbar';
 import './MainLayout.css';
 
-/**
- * Main Layout Component
- * Wraps all pages with navigation
- */
+
 const MainLayout = () => {
   return (
     <div className="main-layout">

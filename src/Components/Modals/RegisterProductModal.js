@@ -2,10 +2,7 @@ import React, { useState } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 import { useContract } from '../../Services/Contexts/ContractContext';
 
-/**
- * Register Product Modal
- * Form to register new products (Farmer only)
- */
+
 const RegisterProductModal = ({ show, onHide }) => {
   const { registerProduct } = useContract();
   const [formData, setFormData] = useState({

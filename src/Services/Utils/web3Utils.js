@@ -1,9 +1,5 @@
 import Web3 from 'web3';
 
-/**
- * Web3 Utilities for blockchain interaction
- * Handles MetaMask connection and Web3 initialization
- */
 
 let web3Instance = null;
 
