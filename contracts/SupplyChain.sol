@@ -1,9 +1,5 @@
-// SPDX-License-Identifier: MIT
 pragma solidity >=0.4.22 <0.9.0;
-
-// This contract implements the Traceability and Trading modules, along with Role-Based Access Control.
-contract SupplyChain {
-    
+{  
     struct Product {
         uint256 id;
         string name;
@@ -19,19 +15,16 @@ contract SupplyChain {
     address public contractOwner;
     mapping(address => bool) public isVerifiedFarmer;
 
-    // --- Events (Transparency) ---
     event ProductRegistered(uint256 productId, string name, address indexed farmer);
     event OwnershipTransferred(uint256 productId, address indexed from, address indexed to);
  
-
-    // --- Modifiers (Access Control) ---
     
     modifier onlyOwner() {
         require(msg.sender == contractOwner, "SC: Only contract owner can call this function.");
         _;
     }
 
-    // Restricts access to verified farmers/manufacturers (for registration)
+    // Restricts access to verified farmers/manufacturers
     modifier onlyFarmer() {
         require(isVerifiedFarmer[msg.sender], "SC: Access denied. Must be a verified Farmer.");
         _;
@@ -42,14 +35,14 @@ contract SupplyChain {
         contractOwner = msg.sender;
     }
     
-    // --- Core Functions: Access Control (Admin) ---
+    // core Functions: Access Control (Admin)
     
     // Admin function to grant the 'Verified Farmer' role
     function setFarmerRole(address _user) public onlyOwner {
         isVerifiedFarmer[_user] = true;
     }
 
-    //Traceability & Trading Module ---
+    //Traceability & Trading Module
     
     // Registers a new product, setting the origin and initial ownership
     function registerProduct(uint256 _id, string memory _name, string memory _origin) public onlyFarmer {
