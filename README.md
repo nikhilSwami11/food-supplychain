@@ -79,12 +79,3 @@ The core logic resides in `contracts/SupplyChain.sol`. This table outlines the p
 | **Ayushmaan Kaushik** | 1234080707 | Front-End Developer |
 | **Avaneesh Rajendra Shetti** | 1233765743 | Back-End & Database Engineer |
 | **Deepikaa Anjan Kumar** | 1233513829 | Research & Documentation Lead |
-
----
-
-## 6. Testing
-
-Unit tests for this contract are provided in `test/TestSupplyChain.js` and can be run using the following command:
-
-```bash
-truffle test
