@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../Services/Contexts/AuthContext';
 import { useContract } from '../../Services/Contexts/ContractContext';
@@ -6,14 +6,26 @@ import './Navbar.css';
 
 
 const Navbar = () => {
-  const { account, isConnected, connectWallet, disconnectWallet } = useAuth();
+  const { account, isConnected, connectWallet, disconnectWallet, error } = useAuth();
   const { isAdmin, isFarmer } = useContract();
+  const [showError, setShowError] = useState(false);
 
   const handleConnect = async () => {
     if (isConnected) {
       disconnectWallet();
+      setShowError(false);
     } else {
-      await connectWallet();
+      // Check if MetaMask is installed
+      if (!window.ethereum) {
+        alert('MetaMask is not installed!\n\nPlease install MetaMask browser extension to connect your wallet.\n\nVisit: https://metamask.io/download/');
+        return;
+      }
+
+      const result = await connectWallet();
+      if (!result.success) {
+        setShowError(true);
+        setTimeout(() => setShowError(false), 5000); // Hide error after 5 seconds
+      }
     }
   };
 
@@ -23,11 +35,18 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
-      <div className="container-fluid">
-        <Link className="navbar-brand" to="/">
-          Supply Chain Blockchain
-        </Link>
+    <>
+      {showError && error && (
+        <div className="alert alert-danger alert-dismissible fade show m-0" role="alert">
+          <strong>Connection Error:</strong> {error}
+          <button type="button" className="btn-close" onClick={() => setShowError(false)}></button>
+        </div>
+      )}
+      <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div className="container-fluid">
+          <Link className="navbar-brand" to="/">
+            Supply Chain Blockchain
+          </Link>
         
         <button
           className="navbar-toggler"
@@ -87,6 +106,7 @@ const Navbar = () => {
         </div>
       </div>
     </nav>
+    </>
   );
 };
 
