@@ -1,15 +1,33 @@
 import React, { useState } from 'react';
 import { Modal, Button, Badge } from 'react-bootstrap';
 import TransferOwnershipModal from './TransferOwnershipModal';
+import UpdateStatusModal from './UpdateStatusModal';
 
 
 const ProductDetailsModal = ({ show, onHide, product }) => {
   const [showTransferModal, setShowTransferModal] = useState(false);
+  const [showUpdateStatusModal, setShowUpdateStatusModal] = useState(false);
 
   if (!product) return null;
 
   const handleTransferClick = () => {
     setShowTransferModal(true);
+  };
+
+  const handleUpdateStatusClick = () => {
+    setShowUpdateStatusModal(true);
+  };
+
+  // Map state number to readable text
+  const getStateText = (state) => {
+    const states = ['Created', 'InTransit', 'Stored', 'Delivered'];
+    return states[state] || 'Unknown';
+  };
+
+  // Get badge color based on state
+  const getStateBadgeColor = (state) => {
+    const colors = ['secondary', 'primary', 'warning', 'success'];
+    return colors[state] || 'secondary';
   };
 
   return (
@@ -49,6 +67,20 @@ const ProductDetailsModal = ({ show, onHide, product }) => {
                     )}
                   </td>
                 </tr>
+                <tr>
+                  <th>Status:</th>
+                  <td>
+                    <Badge bg={getStateBadgeColor(product.state)}>
+                      {getStateText(product.state)}
+                    </Badge>
+                  </td>
+                </tr>
+                <tr>
+                  <th>IPFS Hash:</th>
+                  <td className="text-break">
+                    {product.ipfsHash || 'N/A'}
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -82,7 +114,12 @@ const ProductDetailsModal = ({ show, onHide, product }) => {
           <Button variant="secondary" onClick={onHide}>
             Close
           </Button>
+          <Button variant="info" onClick={handleUpdateStatusClick}>
+            <i className="bi bi-arrow-repeat me-2"></i>
+            Update Status
+          </Button>
           <Button variant="primary" onClick={handleTransferClick}>
+            <i className="bi bi-arrow-left-right me-2"></i>
             Transfer Ownership
           </Button>
         </Modal.Footer>
@@ -92,6 +129,13 @@ const ProductDetailsModal = ({ show, onHide, product }) => {
         show={showTransferModal}
         onHide={() => setShowTransferModal(false)}
         productId={product.id}
+      />
+
+      <UpdateStatusModal
+        show={showUpdateStatusModal}
+        onHide={() => setShowUpdateStatusModal(false)}
+        productId={product.id}
+        currentState={product.state}
       />
     </>
   );

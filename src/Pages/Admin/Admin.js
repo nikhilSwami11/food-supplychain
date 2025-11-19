@@ -8,32 +8,58 @@ import './Admin.css';
  */
 const Admin = () => {
   const { isConnected } = useAuth();
-  const { isAdmin, setFarmerRole } = useContract();
+  const { isAdmin, setFarmerRole, setEntityRole } = useContract();
   const [farmerAddress, setFarmerAddress] = useState('');
-  const [message, setMessage] = useState({ type: '', text: '' });
-  const [isLoading, setIsLoading] = useState(false);
+  const [entityAddress, setEntityAddress] = useState('');
+  const [farmerMessage, setFarmerMessage] = useState({ type: '', text: '' });
+  const [entityMessage, setEntityMessage] = useState({ type: '', text: '' });
+  const [isFarmerLoading, setIsFarmerLoading] = useState(false);
+  const [isEntityLoading, setIsEntityLoading] = useState(false);
 
   const handleVerifyFarmer = async (e) => {
     e.preventDefault();
-    
+
     if (!farmerAddress) {
-      setMessage({ type: 'danger', text: 'Please enter a farmer address' });
+      setFarmerMessage({ type: 'danger', text: 'Please enter a farmer address' });
       return;
     }
 
-    setIsLoading(true);
-    setMessage({ type: '', text: '' });
+    setIsFarmerLoading(true);
+    setFarmerMessage({ type: '', text: '' });
 
     const result = await setFarmerRole(farmerAddress);
 
     if (result.success) {
-      setMessage({ type: 'success', text: 'Farmer verified successfully!' });
+      setFarmerMessage({ type: 'success', text: 'Farmer verified successfully!' });
       setFarmerAddress('');
     } else {
-      setMessage({ type: 'danger', text: result.error });
+      setFarmerMessage({ type: 'danger', text: result.error });
     }
 
-    setIsLoading(false);
+    setIsFarmerLoading(false);
+  };
+
+  const handleVerifyEntity = async (e) => {
+    e.preventDefault();
+
+    if (!entityAddress) {
+      setEntityMessage({ type: 'danger', text: 'Please enter an entity address' });
+      return;
+    }
+
+    setIsEntityLoading(true);
+    setEntityMessage({ type: '', text: '' });
+
+    const result = await setEntityRole(entityAddress);
+
+    if (result.success) {
+      setEntityMessage({ type: 'success', text: 'Entity authorized successfully!' });
+      setEntityAddress('');
+    } else {
+      setEntityMessage({ type: 'danger', text: result.error });
+    }
+
+    setIsEntityLoading(false);
   };
 
   if (!isConnected) {
@@ -81,22 +107,22 @@ const Admin = () => {
                 placeholder="0x..."
                 value={farmerAddress}
                 onChange={(e) => setFarmerAddress(e.target.value)}
-                disabled={isLoading}
+                disabled={isFarmerLoading}
               />
             </div>
 
-            {message.text && (
-              <div className={`alert alert-${message.type}`} role="alert">
-                {message.text}
+            {farmerMessage.text && (
+              <div className={`alert alert-${farmerMessage.type}`} role="alert">
+                {farmerMessage.text}
               </div>
             )}
 
             <button
               type="submit"
               className="btn btn-primary"
-              disabled={isLoading}
+              disabled={isFarmerLoading}
             >
-              {isLoading ? (
+              {isFarmerLoading ? (
                 <>
                   <span className="spinner-border spinner-border-sm me-2"></span>
                   Verifying...
@@ -112,16 +138,74 @@ const Admin = () => {
         </div>
       </div>
 
+      {/* Authorize Entity Card */}
+      <div className="card mb-4">
+        <div className="card-body">
+          <h5 className="card-title">Authorize Entity</h5>
+          <p className="card-text">
+            Grant entity role to a user address. Authorized entities can receive products in the supply chain (distributors, retailers, etc.).
+          </p>
+
+          <form onSubmit={handleVerifyEntity}>
+            <div className="mb-3">
+              <label htmlFor="entityAddress" className="form-label">
+                Entity Address
+              </label>
+              <input
+                type="text"
+                className="form-control"
+                id="entityAddress"
+                placeholder="0x..."
+                value={entityAddress}
+                onChange={(e) => setEntityAddress(e.target.value)}
+                disabled={isEntityLoading}
+              />
+            </div>
+
+            {entityMessage.text && (
+              <div className={`alert alert-${entityMessage.type}`} role="alert">
+                {entityMessage.text}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              className="btn btn-success"
+              disabled={isEntityLoading}
+            >
+              {isEntityLoading ? (
+                <>
+                  <span className="spinner-border spinner-border-sm me-2"></span>
+                  Authorizing...
+                </>
+              ) : (
+                <>
+                  <i className="bi bi-building-check me-2"></i>
+                  Authorize Entity
+                </>
+              )}
+            </button>
+          </form>
+        </div>
+      </div>
+
       {/* Admin Info */}
       <div className="row">
-        <div className="col-md-6 mb-3">
+        <div className="col-md-4 mb-3">
           <div className="info-card">
             <i className="bi bi-shield-check fs-1 text-success"></i>
             <h5 className="mt-3">Farmer Verification</h5>
             <p>Verify trusted farmers to allow them to register products</p>
           </div>
         </div>
-        <div className="col-md-6 mb-3">
+        <div className="col-md-4 mb-3">
+          <div className="info-card">
+            <i className="bi bi-building-check fs-1 text-info"></i>
+            <h5 className="mt-3">Entity Authorization</h5>
+            <p>Authorize entities to participate in the supply chain</p>
+          </div>
+        </div>
+        <div className="col-md-4 mb-3">
           <div className="info-card">
             <i className="bi bi-gear fs-1 text-primary"></i>
             <h5 className="mt-3">System Management</h5>

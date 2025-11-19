@@ -8,7 +8,10 @@ import {
   getProductHistory as getProductHistoryUtil,
   verifyProduct as verifyProductUtil,
   setFarmerRole as setFarmerRoleUtil,
+  setEntityRole as setEntityRoleUtil,
   isVerifiedFarmer as isVerifiedFarmerUtil,
+  isAuthorizedEntity as isAuthorizedEntityUtil,
+  updateStatus as updateStatusUtil,
   getContractOwner as getContractOwnerUtil
 } from '../Utils/contractUtils';
 
@@ -34,11 +37,11 @@ export const ContractProvider = ({ children }) => {
 
 
   const CONTRACT_ABI = [
-    {
-      "inputs": [],
-      "stateMutability": "nonpayable",
-      "type": "constructor"
-    },
+  {
+    "inputs": [],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
     {
       "anonymous": false,
       "inputs": [
@@ -89,6 +92,7 @@ export const ContractProvider = ({ children }) => {
       "name": "ProductRegistered",
       "type": "event"
     },
+
     {
       "inputs": [],
       "name": "contractOwner",
@@ -157,6 +161,11 @@ export const ContractProvider = ({ children }) => {
           "internalType": "bool",
           "name": "isAuthentic",
           "type": "bool"
+        },
+        {
+          "internalType": "string",
+          "name": "ipfsHash",
+          "type": "string"
         }
       ],
       "stateMutability": "view",
@@ -191,6 +200,11 @@ export const ContractProvider = ({ children }) => {
         {
           "internalType": "string",
           "name": "_origin",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "_ipfsHash",
           "type": "string"
         }
       ],
@@ -258,6 +272,11 @@ export const ContractProvider = ({ children }) => {
               "internalType": "address[]",
               "name": "ownershipHistory",
               "type": "address[]"
+            },
+            {
+              "internalType": "string",
+              "name": "ipfsHash",
+              "type": "string"
             }
           ],
           "internalType": "struct SupplyChain.Product",
@@ -310,7 +329,7 @@ export const ContractProvider = ({ children }) => {
       "constant": true
     }
   ];
-  const CONTRACT_ADDRESS = '0x8482C09E5Ee1f9C478E459bE1C84125D5781FD07';
+  const CONTRACT_ADDRESS = '0xAcbF8C4B81bA590D98c963615eB3e5c82B6EF095';
 
  
   useEffect(() => {
@@ -347,13 +366,13 @@ export const ContractProvider = ({ children }) => {
     checkRoles();
   }, [contract, account]);
 
-  
-  const registerProduct = async (productId, productName, origin) => {
+
+  const registerProduct = async (productId, productName, origin, ipfsHash) => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const receipt = await registerProductUtil(productId, productName, origin, account);
+      const receipt = await registerProductUtil(productId, productName, origin, ipfsHash, account);
       setIsLoading(false);
       return { success: true, receipt };
     } catch (err) {
@@ -427,7 +446,7 @@ export const ContractProvider = ({ children }) => {
     }
   };
 
-  
+
   const setFarmerRole = async (userAddress) => {
     setIsLoading(true);
     setError(null);
@@ -436,6 +455,54 @@ export const ContractProvider = ({ children }) => {
       const receipt = await setFarmerRoleUtil(userAddress, account);
       setIsLoading(false);
       return { success: true, receipt };
+    } catch (err) {
+      setError(err.message);
+      setIsLoading(false);
+      return { success: false, error: err.message };
+    }
+  };
+
+
+  const setEntityRole = async (userAddress) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const receipt = await setEntityRoleUtil(userAddress, account);
+      setIsLoading(false);
+      return { success: true, receipt };
+    } catch (err) {
+      setError(err.message);
+      setIsLoading(false);
+      return { success: false, error: err.message };
+    }
+  };
+
+
+  const updateStatus = async (productId, newState, ipfsData) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const receipt = await updateStatusUtil(productId, newState, ipfsData, account);
+      setIsLoading(false);
+      return { success: true, receipt };
+    } catch (err) {
+      setError(err.message);
+      setIsLoading(false);
+      return { success: false, error: err.message };
+    }
+  };
+
+
+  const isAuthorizedEntity = async (address) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const isEntity = await isAuthorizedEntityUtil(address);
+      setIsLoading(false);
+      return { success: true, isEntity };
     } catch (err) {
       setError(err.message);
       setIsLoading(false);
@@ -455,7 +522,10 @@ export const ContractProvider = ({ children }) => {
     getProduct,
     getProductHistory,
     verifyProduct,
-    setFarmerRole
+    setFarmerRole,
+    setEntityRole,
+    updateStatus,
+    isAuthorizedEntity
   };
 
   return <ContractContext.Provider value={value}>{children}</ContractContext.Provider>;

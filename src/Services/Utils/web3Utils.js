@@ -70,7 +70,8 @@ export const getCurrentAccount = async () => {
 export const onAccountChange = (callback) => {
   if (window.ethereum) {
     window.ethereum.on('accountsChanged', (accounts) => {
-      callback(accounts[0]);
+      console.log('MetaMask accounts changed:', accounts);
+      callback(accounts);
     });
   }
 };

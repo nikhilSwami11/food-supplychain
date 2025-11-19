@@ -37,14 +37,15 @@ export const getContract = () => {
  * @param {number} productId - Unique product ID
  * @param {string} productName - Product name
  * @param {string} origin - Product origin
+ * @param {string} ipfsHash - IPFS hash for product data
  * @param {string} fromAddress - Sender address
  * @returns {Object} Transaction receipt
  */
-export const registerProduct = async (productId, productName, origin, fromAddress) => {
+export const registerProduct = async (productId, productName, origin, ipfsHash, fromAddress) => {
   try {
     const contract = getContract();
     const receipt = await contract.methods
-      .registerProduct(productId, productName, origin)
+      .registerProduct(productId, productName, origin, ipfsHash)
       .send({ from: fromAddress });
     return receipt;
   } catch (error) {
@@ -83,12 +84,13 @@ export const getProduct = async (productId) => {
     const contract = getContract();
     const product = await contract.methods.getProduct(productId).call();
     return {
-      id: product.id,
-      name: product.name,
-      currentOwner: product.currentOwner,
-      origin: product.origin,
-      isAuthentic: product.isAuthentic,
-      ownershipHistory: product.ownershipHistory
+      id: product[0],
+      name: product[1],
+      currentOwner: product[2],
+      origin: product[3],
+      isAuthentic: product[4],
+      state: product[5],
+      ipfsHash: product[6]
     };
   } catch (error) {
     console.error('Error getting product:', error);
@@ -174,6 +176,62 @@ export const getContractOwner = async () => {
     return owner;
   } catch (error) {
     console.error('Error getting contract owner:', error);
+    throw error;
+  }
+};
+
+/**
+ * Update product status (Current owner only)
+ * @param {number} productId - Product ID
+ * @param {number} newState - New state (0: Created, 1: InTransit, 2: Stored, 3: Delivered)
+ * @param {string} ipfsData - IPFS hash for status update data
+ * @param {string} fromAddress - Current owner address
+ * @returns {Object} Transaction receipt
+ */
+export const updateStatus = async (productId, newState, ipfsData, fromAddress) => {
+  try {
+    const contract = getContract();
+    const receipt = await contract.methods
+      .updateStatus(productId, newState, ipfsData)
+      .send({ from: fromAddress });
+    return receipt;
+  } catch (error) {
+    console.error('Error updating status:', error);
+    throw error;
+  }
+};
+
+/**
+ * Set entity role (Admin only)
+ * @param {string} userAddress - User address to grant entity role
+ * @param {string} fromAddress - Admin address
+ * @returns {Object} Transaction receipt
+ */
+export const setEntityRole = async (userAddress, fromAddress) => {
+  try {
+    const contract = getContract();
+    const receipt = await contract.methods
+      .setEntityRole(userAddress)
+      .send({ from: fromAddress });
+    return receipt;
+  } catch (error) {
+    console.error('Error setting entity role:', error);
+    throw error;
+  }
+};
+
+/**
+ * Check if address is authorized entity
+ * @param {string} address - Address to check
+ * @returns {boolean} Entity authorization status
+ */
+export const isAuthorizedEntity = async (address) => {
+  try {
+    const contract = getContract();
+    const isEntity = await contract.methods.isAuthorizedEntity(address).call();
+    return isEntity;
+  } catch (error) {
+    console.error('Error checking entity status:', error);
     throw error;
   }
 };

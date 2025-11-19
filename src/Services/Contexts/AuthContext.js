@@ -50,20 +50,31 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  
+
   const disconnectWallet = () => {
+    console.log('Disconnecting wallet...');
     setAccount(null);
     setWeb3(null);
     setNetworkId(null);
     setIsConnected(false);
+    setError(null);
     localStorage.removeItem('walletConnected');
+
+    // Reload the page to clear all state
+    window.location.reload();
   };
 
-  
-  const handleAccountChange = (newAccount) => {
-    if (newAccount) {
+
+  const handleAccountChange = async (accounts) => {
+    if (accounts && accounts.length > 0) {
+      const newAccount = accounts[0];
+      console.log('Account changed to:', newAccount);
       setAccount(newAccount);
+
+      // Reload the page to refresh all contract data
+      window.location.reload();
     } else {
+      console.log('No accounts found, disconnecting');
       disconnectWallet();
     }
   };

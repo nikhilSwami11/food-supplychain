@@ -8,7 +8,8 @@ const RegisterProductModal = ({ show, onHide }) => {
   const [formData, setFormData] = useState({
     productId: '',
     productName: '',
-    origin: ''
+    origin: '',
+    ipfsHash: ''
   });
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
@@ -22,8 +23,8 @@ const RegisterProductModal = ({ show, onHide }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!formData.productId || !formData.productName || !formData.origin) {
+
+    if (!formData.productId || !formData.productName || !formData.origin || !formData.ipfsHash) {
       setMessage({ type: 'danger', text: 'Please fill in all fields' });
       return;
     }
@@ -34,12 +35,13 @@ const RegisterProductModal = ({ show, onHide }) => {
     const result = await registerProduct(
       parseInt(formData.productId),
       formData.productName,
-      formData.origin
+      formData.origin,
+      formData.ipfsHash
     );
 
     if (result.success) {
       setMessage({ type: 'success', text: 'Product registered successfully!' });
-      setFormData({ productId: '', productName: '', origin: '' });
+      setFormData({ productId: '', productName: '', origin: '', ipfsHash: '' });
       setTimeout(() => {
         onHide();
         setMessage({ type: '', text: '' });
@@ -52,7 +54,7 @@ const RegisterProductModal = ({ show, onHide }) => {
   };
 
   const handleClose = () => {
-    setFormData({ productId: '', productName: '', origin: '' });
+    setFormData({ productId: '', productName: '', origin: '', ipfsHash: '' });
     setMessage({ type: '', text: '' });
     onHide();
   };
@@ -98,6 +100,21 @@ const RegisterProductModal = ({ show, onHide }) => {
               onChange={handleChange}
               disabled={isLoading}
             />
+          </Form.Group>
+
+          <Form.Group className="mb-3">
+            <Form.Label>IPFS Hash</Form.Label>
+            <Form.Control
+              type="text"
+              name="ipfsHash"
+              placeholder="Enter IPFS hash for product data"
+              value={formData.ipfsHash}
+              onChange={handleChange}
+              disabled={isLoading}
+            />
+            <Form.Text className="text-muted">
+              IPFS hash for storing additional product information
+            </Form.Text>
           </Form.Group>
 
           {message.text && (

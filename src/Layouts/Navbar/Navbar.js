@@ -86,6 +86,11 @@ const Navbar = () => {
                 Profile
               </Link>
             </li>
+            <li className="nav-item">
+              <Link className="nav-link text-warning" to="/debug">
+                🔍 Debug
+              </Link>
+            </li>
           </ul>
 
           <div className="d-flex align-items-center">

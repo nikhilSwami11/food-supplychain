@@ -9,8 +9,9 @@ contract SupplyChain {
         string name;
         address currentOwner;       // Tracks the entity currently possessing the product
         string origin;
-        bool isAuthentic;         
+        bool isAuthentic;
         address[] ownershipHistory; // Logs the complete sequence of owners/locations
+        string ipfsHash;            // IPFS hash for product images/documents
     }
     
     // Main storage for products
@@ -52,21 +53,22 @@ contract SupplyChain {
     //Traceability & Trading Module ---
     
     // Registers a new product, setting the origin and initial ownership
-    function registerProduct(uint256 _id, string memory _name, string memory _origin) public onlyFarmer {
-        require(products[_id].id == 0, "SC: Product ID already registered."); 
-        
+    function registerProduct(uint256 _id, string memory _name, string memory _origin, string memory _ipfsHash) public onlyFarmer {
+        require(products[_id].id == 0, "SC: Product ID already registered.");
+
         Product memory newProduct = Product({
             id: _id,
             name: _name,
             currentOwner: msg.sender,
             origin: _origin,
             isAuthentic: true,
-            ownershipHistory: new address[](0) 
+            ownershipHistory: new address[](0),
+            ipfsHash: _ipfsHash
         });
-        
+
         products[_id] = newProduct;
-        products[_id].ownershipHistory.push(msg.sender); 
-        
+        products[_id].ownershipHistory.push(msg.sender);
+
         emit ProductRegistered(_id, _name, msg.sender);
     }
 
