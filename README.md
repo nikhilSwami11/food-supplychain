@@ -1,5 +1,6 @@
 # CSE 540: **Blockchain-Based Supply Chain Provenance System** (Team 11)
 
+
 This project aims to develop a decentralized application (DApp) that leverages the Ethereum blockchain to ensure **authenticity, transparency, and end-to-end traceability** for products moving through a supply chain network.
 
 The core of the system is the **SupplyChain.sol** smart contract, which consolidates all necessary logic, access control, and asset tracking into a single, efficient unit.
