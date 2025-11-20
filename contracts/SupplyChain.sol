@@ -218,8 +218,25 @@ contract SupplyChain {
             "SC: Only current owner can update status."
         );
 
+        // Update the Status
         products[_id].state = _newState;
         emit StatusUpdated(_id, _newState, _ipfsData);
+
+        if (_newState == State.Delivered) {
+            // Ensure there was actually a user who ordered it
+            require(
+                products[_id].orderedBy != address(0),
+                "SC: Cannot deliver, no buyer found."
+            );
+
+            address previousOwner = products[_id].currentOwner;
+            address buyer = products[_id].orderedBy;
+
+            products[_id].currentOwner = buyer;
+            products[_id].ownershipHistory.push(buyer);
+
+            emit OwnershipTransferred(_id, previousOwner, buyer);
+        }
     }
 
     function getProduct(
