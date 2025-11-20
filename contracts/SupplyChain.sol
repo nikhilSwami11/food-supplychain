@@ -276,4 +276,128 @@ contract SupplyChain {
     function verifyProduct(uint256 _id) public view returns (bool) {
         return products[_id].isAuthentic;
     }
+
+    // ========== DISTRIBUTOR FUNCTIONS ==========
+
+    /**
+     * Get all products currently owned by the caller (Distributor Inventory)
+     * @return Array of products owned by msg.sender
+     */
+    function getDistributorInventory() public view returns (Product[] memory) {
+        uint256 count = 0;
+
+        // Count products I currently own
+        for (uint256 i = 0; i < allProductIds.length; i++) {
+            if (products[allProductIds[i]].currentOwner == msg.sender) {
+                count++;
+            }
+        }
+
+        Product[] memory inventory = new Product[](count);
+        uint256 index = 0;
+
+        for (uint256 i = 0; i < allProductIds.length; i++) {
+            if (products[allProductIds[i]].currentOwner == msg.sender) {
+                inventory[index] = products[allProductIds[i]];
+                index++;
+            }
+        }
+
+        return inventory;
+    }
+
+    /**
+     * Get products that need to be delivered (in Stored state)
+     * @return Array of products in Stored state owned by msg.sender
+     */
+    function getDeliveryQueue() public view returns (Product[] memory) {
+        uint256 count = 0;
+
+        for (uint256 i = 0; i < allProductIds.length; i++) {
+            Product memory p = products[allProductIds[i]];
+            if (p.currentOwner == msg.sender && p.state == State.Stored) {
+                count++;
+            }
+        }
+
+        Product[] memory queue = new Product[](count);
+        uint256 index = 0;
+
+        for (uint256 i = 0; i < allProductIds.length; i++) {
+            Product memory p = products[allProductIds[i]];
+            if (p.currentOwner == msg.sender && p.state == State.Stored) {
+                queue[index] = p;
+                index++;
+            }
+        }
+
+        return queue;
+    }
+
+    /**
+     * Get products that have been received but not yet stored (in InTransit state)
+     * @return Array of products in InTransit state owned by msg.sender
+     */
+    function getReceivedProducts() public view returns (Product[] memory) {
+        uint256 count = 0;
+
+        for (uint256 i = 0; i < allProductIds.length; i++) {
+            Product memory p = products[allProductIds[i]];
+            if (p.currentOwner == msg.sender && p.state == State.InTransit) {
+                count++;
+            }
+        }
+
+        Product[] memory received = new Product[](count);
+        uint256 index = 0;
+
+        for (uint256 i = 0; i < allProductIds.length; i++) {
+            Product memory p = products[allProductIds[i]];
+            if (p.currentOwner == msg.sender && p.state == State.InTransit) {
+                received[index] = p;
+                index++;
+            }
+        }
+
+        return received;
+    }
+
+    /**
+     * Get products that have been delivered (in Delivered state and I was the previous owner)
+     * @return Array of products in Delivered state that were owned by msg.sender
+     */
+    function getDeliveryHistory() public view returns (Product[] memory) {
+        uint256 count = 0;
+
+        for (uint256 i = 0; i < allProductIds.length; i++) {
+            Product memory p = products[allProductIds[i]];
+            // Check if product is delivered and I'm in the ownership history
+            if (p.state == State.Delivered) {
+                for (uint256 j = 0; j < p.ownershipHistory.length; j++) {
+                    if (p.ownershipHistory[j] == msg.sender && p.currentOwner != msg.sender) {
+                        count++;
+                        break;
+                    }
+                }
+            }
+        }
+
+        Product[] memory history = new Product[](count);
+        uint256 index = 0;
+
+        for (uint256 i = 0; i < allProductIds.length; i++) {
+            Product memory p = products[allProductIds[i]];
+            if (p.state == State.Delivered) {
+                for (uint256 j = 0; j < p.ownershipHistory.length; j++) {
+                    if (p.ownershipHistory[j] == msg.sender && p.currentOwner != msg.sender) {
+                        history[index] = p;
+                        index++;
+                        break;
+                    }
+                }
+            }
+        }
+
+        return history;
+    }
 }

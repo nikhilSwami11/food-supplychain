@@ -9,6 +9,13 @@ import Farmers from './Pages/Farmers/Farmers';
 import Admin from './Pages/Admin/Admin';
 import Profile from './Pages/Profile';
 import Debug from './Pages/Debug';
+import Distributor from './Pages/Distributor/Distributor';
+import Inventory from './Pages/Distributor/Inventory';
+import ReceivedProducts from './Pages/Distributor/ReceivedProducts';
+import DeliveryQueue from './Pages/Distributor/DeliveryQueue';
+import DeliveryHistory from './Pages/Distributor/DeliveryHistory';
+import Marketplace from './Pages/Consumer/Marketplace';
+import MyOrders from './Pages/Consumer/MyOrders';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import './App.css';
@@ -31,6 +38,17 @@ function App() {
               <Route path="admin" element={<Admin />} />
               <Route path="profile" element={<Profile />} />
               <Route path="debug" element={<Debug />} />
+
+              {/* Distributor Routes */}
+              <Route path="distributor" element={<Distributor />} />
+              <Route path="distributor/inventory" element={<Inventory />} />
+              <Route path="distributor/received" element={<ReceivedProducts />} />
+              <Route path="distributor/delivery-queue" element={<DeliveryQueue />} />
+              <Route path="distributor/history" element={<DeliveryHistory />} />
+
+              {/* Consumer Routes */}
+              <Route path="marketplace" element={<Marketplace />} />
+              <Route path="my-orders" element={<MyOrders />} />
             </Route>
           </Routes>
         </Router>

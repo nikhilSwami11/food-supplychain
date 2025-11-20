@@ -10,11 +10,11 @@ const Admin = () => {
   const { isConnected } = useAuth();
   const { isAdmin, setFarmerRole, setEntityRole } = useContract();
   const [farmerAddress, setFarmerAddress] = useState('');
-  const [entityAddress, setEntityAddress] = useState('');
+  const [distributorAddress, setDistributorAddress] = useState('');
   const [farmerMessage, setFarmerMessage] = useState({ type: '', text: '' });
-  const [entityMessage, setEntityMessage] = useState({ type: '', text: '' });
+  const [distributorMessage, setDistributorMessage] = useState({ type: '', text: '' });
   const [isFarmerLoading, setIsFarmerLoading] = useState(false);
-  const [isEntityLoading, setIsEntityLoading] = useState(false);
+  const [isDistributorLoading, setIsDistributorLoading] = useState(false);
 
   const handleVerifyFarmer = async (e) => {
     e.preventDefault();
@@ -39,27 +39,27 @@ const Admin = () => {
     setIsFarmerLoading(false);
   };
 
-  const handleVerifyEntity = async (e) => {
+  const handleVerifyDistributor = async (e) => {
     e.preventDefault();
 
-    if (!entityAddress) {
-      setEntityMessage({ type: 'danger', text: 'Please enter an entity address' });
+    if (!distributorAddress) {
+      setDistributorMessage({ type: 'danger', text: 'Please enter a distributor address' });
       return;
     }
 
-    setIsEntityLoading(true);
-    setEntityMessage({ type: '', text: '' });
+    setIsDistributorLoading(true);
+    setDistributorMessage({ type: '', text: '' });
 
-    const result = await setEntityRole(entityAddress);
+    const result = await setEntityRole(distributorAddress);
 
     if (result.success) {
-      setEntityMessage({ type: 'success', text: 'Entity authorized successfully!' });
-      setEntityAddress('');
+      setDistributorMessage({ type: 'success', text: 'Distributor authorized successfully!' });
+      setDistributorAddress('');
     } else {
-      setEntityMessage({ type: 'danger', text: result.error });
+      setDistributorMessage({ type: 'danger', text: result.error });
     }
 
-    setIsEntityLoading(false);
+    setIsDistributorLoading(false);
   };
 
   if (!isConnected) {
@@ -138,50 +138,50 @@ const Admin = () => {
         </div>
       </div>
 
-      {/* Authorize Entity Card */}
+      {/* Authorize Distributor Card */}
       <div className="card mb-4">
         <div className="card-body">
-          <h5 className="card-title">Authorize Entity</h5>
+          <h5 className="card-title">Authorize Distributor</h5>
           <p className="card-text">
-            Grant entity role to a user address. Authorized entities can receive products in the supply chain (distributors, retailers, etc.).
+            Grant distributor role to a user address. Distributors can receive products from farmers and deliver them to consumers.
           </p>
 
-          <form onSubmit={handleVerifyEntity}>
+          <form onSubmit={handleVerifyDistributor}>
             <div className="mb-3">
-              <label htmlFor="entityAddress" className="form-label">
-                Entity Address
+              <label htmlFor="distributorAddress" className="form-label">
+                Distributor Address
               </label>
               <input
                 type="text"
                 className="form-control"
-                id="entityAddress"
+                id="distributorAddress"
                 placeholder="0x..."
-                value={entityAddress}
-                onChange={(e) => setEntityAddress(e.target.value)}
-                disabled={isEntityLoading}
+                value={distributorAddress}
+                onChange={(e) => setDistributorAddress(e.target.value)}
+                disabled={isDistributorLoading}
               />
             </div>
 
-            {entityMessage.text && (
-              <div className={`alert alert-${entityMessage.type}`} role="alert">
-                {entityMessage.text}
+            {distributorMessage.text && (
+              <div className={`alert alert-${distributorMessage.type}`} role="alert">
+                {distributorMessage.text}
               </div>
             )}
 
             <button
               type="submit"
-              className="btn btn-success"
-              disabled={isEntityLoading}
+              className="btn btn-info"
+              disabled={isDistributorLoading}
             >
-              {isEntityLoading ? (
+              {isDistributorLoading ? (
                 <>
                   <span className="spinner-border spinner-border-sm me-2"></span>
                   Authorizing...
                 </>
               ) : (
                 <>
-                  <i className="bi bi-building-check me-2"></i>
-                  Authorize Entity
+                  <i className="bi bi-truck me-2"></i>
+                  Authorize Distributor
                 </>
               )}
             </button>
@@ -200,16 +200,16 @@ const Admin = () => {
         </div>
         <div className="col-md-4 mb-3">
           <div className="info-card">
-            <i className="bi bi-building-check fs-1 text-info"></i>
-            <h5 className="mt-3">Entity Authorization</h5>
-            <p>Authorize entities to participate in the supply chain</p>
+            <i className="bi bi-truck fs-1 text-info"></i>
+            <h5 className="mt-3">Distributor Authorization</h5>
+            <p>Authorize distributors to handle product delivery</p>
           </div>
         </div>
         <div className="col-md-4 mb-3">
           <div className="info-card">
             <i className="bi bi-gear fs-1 text-primary"></i>
-            <h5 className="mt-3">System Management</h5>
-            <p>Manage the supply chain system and monitor activities</p>
+            <h5 className="mt-3">Role Management</h5>
+            <p>All users start as consumers. Promote them to farmers or distributors as needed.</p>
           </div>
         </div>
       </div>

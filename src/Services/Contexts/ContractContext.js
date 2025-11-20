@@ -12,7 +12,14 @@ import {
   isVerifiedFarmer as isVerifiedFarmerUtil,
   isAuthorizedEntity as isAuthorizedEntityUtil,
   updateStatus as updateStatusUtil,
-  getContractOwner as getContractOwnerUtil
+  getContractOwner as getContractOwnerUtil,
+  getDistributorInventory as getDistributorInventoryUtil,
+  getDeliveryQueue as getDeliveryQueueUtil,
+  getReceivedProducts as getReceivedProductsUtil,
+  getDeliveryHistory as getDeliveryHistoryUtil,
+  getAvailableProducts as getAvailableProductsUtil,
+  placeOrder as placeOrderUtil,
+  getMyOrders as getMyOrdersUtil
 } from '../Utils/contractUtils';
 
 
@@ -31,6 +38,7 @@ export const ContractProvider = ({ children }) => {
   const [contract, setContract] = useState(null);
   const [contractOwner, setContractOwner] = useState(null);
   const [isFarmer, setIsFarmer] = useState(false);
+  const [isDistributor, setIsDistributor] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -188,6 +196,39 @@ export const ContractProvider = ({ children }) => {
     {
       "inputs": [
         {
+          "internalType": "address",
+          "name": "_user",
+          "type": "address"
+        }
+      ],
+      "name": "setEntityRole",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "isAuthorizedEntity",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [
+        {
           "internalType": "uint256",
           "name": "_id",
           "type": "uint256"
@@ -242,46 +283,39 @@ export const ContractProvider = ({ children }) => {
       "name": "getProduct",
       "outputs": [
         {
-          "components": [
-            {
-              "internalType": "uint256",
-              "name": "id",
-              "type": "uint256"
-            },
-            {
-              "internalType": "string",
-              "name": "name",
-              "type": "string"
-            },
-            {
-              "internalType": "address",
-              "name": "currentOwner",
-              "type": "address"
-            },
-            {
-              "internalType": "string",
-              "name": "origin",
-              "type": "string"
-            },
-            {
-              "internalType": "bool",
-              "name": "isAuthentic",
-              "type": "bool"
-            },
-            {
-              "internalType": "address[]",
-              "name": "ownershipHistory",
-              "type": "address[]"
-            },
-            {
-              "internalType": "string",
-              "name": "ipfsHash",
-              "type": "string"
-            }
-          ],
-          "internalType": "struct SupplyChain.Product",
-          "name": "",
-          "type": "tuple"
+          "internalType": "uint256",
+          "name": "id",
+          "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "internalType": "address",
+          "name": "currentOwner",
+          "type": "address"
+        },
+        {
+          "internalType": "string",
+          "name": "origin",
+          "type": "string"
+        },
+        {
+          "internalType": "bool",
+          "name": "isAuthentic",
+          "type": "bool"
+        },
+        {
+          "internalType": "enum SupplyChain.State",
+          "name": "state",
+          "type": "uint8"
+        },
+        {
+          "internalType": "string",
+          "name": "ipfsHash",
+          "type": "string"
         }
       ],
       "stateMutability": "view",
@@ -327,9 +361,411 @@ export const ContractProvider = ({ children }) => {
       "stateMutability": "view",
       "type": "function",
       "constant": true
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_id",
+          "type": "uint256"
+        },
+        {
+          "internalType": "enum SupplyChain.State",
+          "name": "_state",
+          "type": "uint8"
+        },
+        {
+          "internalType": "string",
+          "name": "_ipfsData",
+          "type": "string"
+        }
+      ],
+      "name": "updateStatus",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getDistributorInventory",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "id",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "internalType": "address",
+              "name": "currentOwner",
+              "type": "address"
+            },
+            {
+              "internalType": "string",
+              "name": "origin",
+              "type": "string"
+            },
+            {
+              "internalType": "bool",
+              "name": "isAuthentic",
+              "type": "bool"
+            },
+            {
+              "internalType": "address[]",
+              "name": "ownershipHistory",
+              "type": "address[]"
+            },
+            {
+              "internalType": "string",
+              "name": "ipfsHash",
+              "type": "string"
+            },
+            {
+              "internalType": "enum SupplyChain.State",
+              "name": "state",
+              "type": "uint8"
+            },
+            {
+              "internalType": "address",
+              "name": "orderedBy",
+              "type": "address"
+            }
+          ],
+          "internalType": "struct SupplyChain.Product[]",
+          "name": "",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [],
+      "name": "getDeliveryQueue",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "id",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "internalType": "address",
+              "name": "currentOwner",
+              "type": "address"
+            },
+            {
+              "internalType": "string",
+              "name": "origin",
+              "type": "string"
+            },
+            {
+              "internalType": "bool",
+              "name": "isAuthentic",
+              "type": "bool"
+            },
+            {
+              "internalType": "address[]",
+              "name": "ownershipHistory",
+              "type": "address[]"
+            },
+            {
+              "internalType": "string",
+              "name": "ipfsHash",
+              "type": "string"
+            },
+            {
+              "internalType": "enum SupplyChain.State",
+              "name": "state",
+              "type": "uint8"
+            },
+            {
+              "internalType": "address",
+              "name": "orderedBy",
+              "type": "address"
+            }
+          ],
+          "internalType": "struct SupplyChain.Product[]",
+          "name": "",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [],
+      "name": "getReceivedProducts",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "id",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "internalType": "address",
+              "name": "currentOwner",
+              "type": "address"
+            },
+            {
+              "internalType": "string",
+              "name": "origin",
+              "type": "string"
+            },
+            {
+              "internalType": "bool",
+              "name": "isAuthentic",
+              "type": "bool"
+            },
+            {
+              "internalType": "address[]",
+              "name": "ownershipHistory",
+              "type": "address[]"
+            },
+            {
+              "internalType": "string",
+              "name": "ipfsHash",
+              "type": "string"
+            },
+            {
+              "internalType": "enum SupplyChain.State",
+              "name": "state",
+              "type": "uint8"
+            },
+            {
+              "internalType": "address",
+              "name": "orderedBy",
+              "type": "address"
+            }
+          ],
+          "internalType": "struct SupplyChain.Product[]",
+          "name": "",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [],
+      "name": "getDeliveryHistory",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "id",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "internalType": "address",
+              "name": "currentOwner",
+              "type": "address"
+            },
+            {
+              "internalType": "string",
+              "name": "origin",
+              "type": "string"
+            },
+            {
+              "internalType": "bool",
+              "name": "isAuthentic",
+              "type": "bool"
+            },
+            {
+              "internalType": "address[]",
+              "name": "ownershipHistory",
+              "type": "address[]"
+            },
+            {
+              "internalType": "string",
+              "name": "ipfsHash",
+              "type": "string"
+            },
+            {
+              "internalType": "enum SupplyChain.State",
+              "name": "state",
+              "type": "uint8"
+            },
+            {
+              "internalType": "address",
+              "name": "orderedBy",
+              "type": "address"
+            }
+          ],
+          "internalType": "struct SupplyChain.Product[]",
+          "name": "",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [],
+      "name": "getAvailableProducts",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "id",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "internalType": "address",
+              "name": "currentOwner",
+              "type": "address"
+            },
+            {
+              "internalType": "string",
+              "name": "origin",
+              "type": "string"
+            },
+            {
+              "internalType": "bool",
+              "name": "isAuthentic",
+              "type": "bool"
+            },
+            {
+              "internalType": "address[]",
+              "name": "ownershipHistory",
+              "type": "address[]"
+            },
+            {
+              "internalType": "enum SupplyChain.State",
+              "name": "state",
+              "type": "uint8"
+            },
+            {
+              "internalType": "string",
+              "name": "ipfsHash",
+              "type": "string"
+            },
+            {
+              "internalType": "address",
+              "name": "orderedBy",
+              "type": "address"
+            }
+          ],
+          "internalType": "struct SupplyChain.Product[]",
+          "name": "",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_id",
+          "type": "uint256"
+        }
+      ],
+      "name": "placeOrder",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getMyOrders",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "id",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "internalType": "address",
+              "name": "currentOwner",
+              "type": "address"
+            },
+            {
+              "internalType": "string",
+              "name": "origin",
+              "type": "string"
+            },
+            {
+              "internalType": "bool",
+              "name": "isAuthentic",
+              "type": "bool"
+            },
+            {
+              "internalType": "address[]",
+              "name": "ownershipHistory",
+              "type": "address[]"
+            },
+            {
+              "internalType": "enum SupplyChain.State",
+              "name": "state",
+              "type": "uint8"
+            },
+            {
+              "internalType": "string",
+              "name": "ipfsHash",
+              "type": "string"
+            },
+            {
+              "internalType": "address",
+              "name": "orderedBy",
+              "type": "address"
+            }
+          ],
+          "internalType": "struct SupplyChain.Product[]",
+          "name": "",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
     }
   ];
-  const CONTRACT_ADDRESS = '0xAcbF8C4B81bA590D98c963615eB3e5c82B6EF095';
+  const CONTRACT_ADDRESS = '0x3ba7fe9160D7465e8d8B716Dc2941535AaCcF926';
 
  
   useEffect(() => {
@@ -344,19 +780,23 @@ export const ContractProvider = ({ children }) => {
     }
   }, [isConnected, web3]);
 
-  
+
   useEffect(() => {
     const checkRoles = async () => {
       if (contract && account) {
         try {
-          
+
           const owner = await getContractOwnerUtil();
           setContractOwner(owner);
           setIsAdmin(owner.toLowerCase() === account.toLowerCase());
 
-          
+
           const farmerStatus = await isVerifiedFarmerUtil(account);
           setIsFarmer(farmerStatus);
+
+          // Check if distributor (authorized entity but NOT farmer)
+          const entityStatus = await isAuthorizedEntityUtil(account);
+          setIsDistributor(entityStatus && !farmerStatus);
         } catch (err) {
           console.error('Error checking roles:', err);
         }
@@ -510,10 +950,120 @@ export const ContractProvider = ({ children }) => {
     }
   };
 
+  // ========== DISTRIBUTOR FUNCTIONS ==========
+
+  const getDistributorInventory = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const inventory = await getDistributorInventoryUtil();
+      setIsLoading(false);
+      return { success: true, inventory };
+    } catch (err) {
+      setError(err.message);
+      setIsLoading(false);
+      return { success: false, error: err.message };
+    }
+  };
+
+  const getDeliveryQueue = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const queue = await getDeliveryQueueUtil();
+      setIsLoading(false);
+      return { success: true, queue };
+    } catch (err) {
+      setError(err.message);
+      setIsLoading(false);
+      return { success: false, error: err.message };
+    }
+  };
+
+  const getReceivedProducts = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const received = await getReceivedProductsUtil();
+      setIsLoading(false);
+      return { success: true, received };
+    } catch (err) {
+      setError(err.message);
+      setIsLoading(false);
+      return { success: false, error: err.message };
+    }
+  };
+
+  const getDeliveryHistory = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const history = await getDeliveryHistoryUtil();
+      setIsLoading(false);
+      return { success: true, history };
+    } catch (err) {
+      setError(err.message);
+      setIsLoading(false);
+      return { success: false, error: err.message };
+    }
+  };
+
+  // ========== CONSUMER FUNCTIONS ==========
+
+  const getAvailableProducts = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const products = await getAvailableProductsUtil();
+      setIsLoading(false);
+      return { success: true, products };
+    } catch (err) {
+      setError(err.message);
+      setIsLoading(false);
+      return { success: false, error: err.message };
+    }
+  };
+
+  const placeOrder = async (productId) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const receipt = await placeOrderUtil(productId, account);
+      setIsLoading(false);
+      return { success: true, receipt };
+    } catch (err) {
+      setError(err.message);
+      setIsLoading(false);
+      return { success: false, error: err.message };
+    }
+  };
+
+  const getMyOrders = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const orders = await getMyOrdersUtil();
+      setIsLoading(false);
+      return { success: true, orders };
+    } catch (err) {
+      setError(err.message);
+      setIsLoading(false);
+      return { success: false, error: err.message };
+    }
+  };
+
   const value = {
     contract,
     contractOwner,
     isFarmer,
+    isDistributor,
     isAdmin,
     isLoading,
     error,
@@ -525,7 +1075,14 @@ export const ContractProvider = ({ children }) => {
     setFarmerRole,
     setEntityRole,
     updateStatus,
-    isAuthorizedEntity
+    isAuthorizedEntity,
+    getDistributorInventory,
+    getDeliveryQueue,
+    getReceivedProducts,
+    getDeliveryHistory,
+    getAvailableProducts,
+    placeOrder,
+    getMyOrders
   };
 
   return <ContractContext.Provider value={value}>{children}</ContractContext.Provider>;

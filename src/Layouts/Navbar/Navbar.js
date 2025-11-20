@@ -7,7 +7,7 @@ import './Navbar.css';
 
 const Navbar = () => {
   const { account, isConnected, connectWallet, disconnectWallet, error } = useAuth();
-  const { isAdmin, isFarmer } = useContract();
+  const { isAdmin, isFarmer, isDistributor } = useContract();
   const [showError, setShowError] = useState(false);
 
   const handleConnect = async () => {
@@ -74,6 +74,23 @@ const Navbar = () => {
                 Farmers
               </Link>
             </li>
+            <li className="nav-item">
+              <Link className="nav-link" to="/marketplace">
+                Marketplace
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link className="nav-link" to="/my-orders">
+                My Orders
+              </Link>
+            </li>
+            {isDistributor && (
+              <li className="nav-item">
+                <Link className="nav-link" to="/distributor">
+                  Distributor
+                </Link>
+              </li>
+            )}
             {isAdmin && (
               <li className="nav-item">
                 <Link className="nav-link" to="/admin">
@@ -98,6 +115,8 @@ const Navbar = () => {
               <div className="me-3">
                 {isAdmin && <span className="badge bg-danger me-2">Admin</span>}
                 {isFarmer && <span className="badge bg-success me-2">Farmer</span>}
+                {isDistributor && <span className="badge bg-info me-2">Distributor</span>}
+                {!isAdmin && !isFarmer && !isDistributor && <span className="badge bg-secondary me-2">Consumer</span>}
                 <span className="text-light">{formatAddress(account)}</span>
               </div>
             )}

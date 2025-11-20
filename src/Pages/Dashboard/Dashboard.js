@@ -9,7 +9,7 @@ import './Dashboard.css';
  */
 const Dashboard = () => {
   const { account, isConnected } = useAuth();
-  const { isAdmin, isFarmer } = useContract();
+  const { isAdmin, isFarmer, isDistributor } = useContract();
 
   if (!isConnected) {
     return (
@@ -37,7 +37,8 @@ const Dashboard = () => {
             <strong>Role:</strong>{' '}
             {isAdmin && <span className="badge bg-danger">Admin</span>}
             {isFarmer && <span className="badge bg-success ms-2">Farmer</span>}
-            {!isAdmin && !isFarmer && <span className="badge bg-secondary">Consumer</span>}
+            {isDistributor && <span className="badge bg-info ms-2">Distributor</span>}
+            {!isAdmin && !isFarmer && !isDistributor && <span className="badge bg-secondary">Consumer</span>}
           </p>
         </div>
       </div>
@@ -84,6 +85,21 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
+
+        {isDistributor && (
+          <div className="col-md-4 mb-3">
+            <div className="card h-100">
+              <div className="card-body text-center">
+                <i className="bi bi-truck fs-1 text-warning"></i>
+                <h5 className="card-title mt-3">Distributor Panel</h5>
+                <p className="card-text">Manage deliveries and inventory</p>
+                <Link to="/distributor" className="btn btn-warning">
+                  Distributor Panel
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
 
         {isAdmin && (
           <div className="col-md-4 mb-3">

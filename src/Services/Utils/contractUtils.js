@@ -236,3 +236,115 @@ export const isAuthorizedEntity = async (address) => {
   }
 };
 
+// ========== DISTRIBUTOR FUNCTIONS ==========
+
+/**
+ * Get all products currently owned by the caller (Distributor Inventory)
+ * @returns {Array} Array of products owned by the caller
+ */
+export const getDistributorInventory = async () => {
+  try {
+    const contract = getContract();
+    const inventory = await contract.methods.getDistributorInventory().call();
+    return inventory;
+  } catch (error) {
+    console.error('Error getting distributor inventory:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get products that need to be delivered (in Stored state)
+ * @returns {Array} Array of products in Stored state owned by the caller
+ */
+export const getDeliveryQueue = async () => {
+  try {
+    const contract = getContract();
+    const queue = await contract.methods.getDeliveryQueue().call();
+    return queue;
+  } catch (error) {
+    console.error('Error getting delivery queue:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get products that have been received but not yet stored (in InTransit state)
+ * @returns {Array} Array of products in InTransit state owned by the caller
+ */
+export const getReceivedProducts = async () => {
+  try {
+    const contract = getContract();
+    const received = await contract.methods.getReceivedProducts().call();
+    return received;
+  } catch (error) {
+    console.error('Error getting received products:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get products that have been delivered (delivery history)
+ * @returns {Array} Array of products that were delivered by the caller
+ */
+export const getDeliveryHistory = async () => {
+  try {
+    const contract = getContract();
+    const history = await contract.methods.getDeliveryHistory().call();
+    return history;
+  } catch (error) {
+    console.error('Error getting delivery history:', error);
+    throw error;
+  }
+};
+
+// ========== CONSUMER FUNCTIONS ==========
+
+/**
+ * Get all available products (in Created state)
+ * @returns {Array} Array of available products
+ */
+export const getAvailableProducts = async () => {
+  try {
+    const contract = getContract();
+    const products = await contract.methods.getAvailableProducts().call();
+    return products;
+  } catch (error) {
+    console.error('Error getting available products:', error);
+    throw error;
+  }
+};
+
+/**
+ * Place an order for a product (Consumer)
+ * @param {number} productId - Product ID to order
+ * @param {string} fromAddress - Consumer address
+ * @returns {Object} Transaction receipt
+ */
+export const placeOrder = async (productId, fromAddress) => {
+  try {
+    const contract = getContract();
+    const receipt = await contract.methods
+      .placeOrder(productId)
+      .send({ from: fromAddress });
+    return receipt;
+  } catch (error) {
+    console.error('Error placing order:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get orders placed by the caller (Consumer)
+ * @returns {Array} Array of products ordered by the caller
+ */
+export const getMyOrders = async () => {
+  try {
+    const contract = getContract();
+    const orders = await contract.methods.getMyOrders().call();
+    return orders;
+  } catch (error) {
+    console.error('Error getting my orders:', error);
+    throw error;
+  }
+};
