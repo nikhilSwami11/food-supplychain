@@ -12,14 +12,15 @@ const UpdateStatusModal = ({ show, onHide, productId, currentState }) => {
 
   const stateOptions = [
     { value: 0, label: 'Created' },
-    { value: 1, label: 'In Transit' },
-    { value: 2, label: 'Stored' },
-    { value: 3, label: 'Delivered' }
+    { value: 1, label: 'Ordered' },
+    { value: 2, label: 'In Transit' },
+    { value: 3, label: 'Stored' },
+    { value: 4, label: 'Delivered' }
   ];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!ipfsData) {
       setMessage({ type: 'danger', text: 'Please enter IPFS data for this status update' });
       return;

@@ -20,13 +20,13 @@ const ProductDetailsModal = ({ show, onHide, product }) => {
 
   // Map state number to readable text
   const getStateText = (state) => {
-    const states = ['Created', 'InTransit', 'Stored', 'Delivered'];
+    const states = ['Created', 'Ordered', 'InTransit', 'Stored', 'Delivered'];
     return states[state] || 'Unknown';
   };
 
   // Get badge color based on state
   const getStateBadgeColor = (state) => {
-    const colors = ['secondary', 'primary', 'warning', 'success'];
+    const colors = ['secondary', 'info', 'primary', 'warning', 'success'];
     return colors[state] || 'secondary';
   };
 
