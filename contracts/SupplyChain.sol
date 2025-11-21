@@ -189,24 +189,21 @@ contract SupplyChain {
         return myOrders;
     }
 
-    function transferOwnership(uint256 _id, address _newOwner) public {
-        require(
-            products[_id].currentOwner == msg.sender,
-            "SC: Only current owner can transfer."
-        );
-        require(products[_id].id != 0, "SC: Product does not exist.");
-        require(
-            isAuthorizedEntity[_newOwner],
-            "SC: Receiver is not authorized."
-        );
-
-        address previousOwner = products[_id].currentOwner;
-
-        products[_id].currentOwner = _newOwner;
-        products[_id].ownershipHistory.push(_newOwner);
-
-        emit OwnershipTransferred(_id, previousOwner, _newOwner);
-    }
+    // function transferOwnership(uint256 _id, address _newOwner) public {
+    //     require(
+    //         products[_id].currentOwner == msg.sender,
+    //         "SC: Only current owner can transfer."
+    //     );
+    //     require(products[_id].id != 0, "SC: Product does not exist.");
+    //     require(
+    //         isAuthorizedEntity[_newOwner],
+    //         "SC: Receiver is not authorized."
+    //     );
+    //     address previousOwner = products[_id].currentOwner;
+    //     products[_id].currentOwner = _newOwner;
+    //     products[_id].ownershipHistory.push(_newOwner);
+    //     emit OwnershipTransferred(_id, previousOwner, _newOwner);
+    // }
 
     function updateStatus(
         uint256 _id,
@@ -374,7 +371,10 @@ contract SupplyChain {
             // Check if product is delivered and I'm in the ownership history
             if (p.state == State.Delivered) {
                 for (uint256 j = 0; j < p.ownershipHistory.length; j++) {
-                    if (p.ownershipHistory[j] == msg.sender && p.currentOwner != msg.sender) {
+                    if (
+                        p.ownershipHistory[j] == msg.sender &&
+                        p.currentOwner != msg.sender
+                    ) {
                         count++;
                         break;
                     }
@@ -389,7 +389,10 @@ contract SupplyChain {
             Product memory p = products[allProductIds[i]];
             if (p.state == State.Delivered) {
                 for (uint256 j = 0; j < p.ownershipHistory.length; j++) {
-                    if (p.ownershipHistory[j] == msg.sender && p.currentOwner != msg.sender) {
+                    if (
+                        p.ownershipHistory[j] == msg.sender &&
+                        p.currentOwner != msg.sender
+                    ) {
                         history[index] = p;
                         index++;
                         break;
