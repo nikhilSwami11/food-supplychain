@@ -341,7 +341,11 @@ export const placeOrder = async (productId, fromAddress) => {
 export const getMyOrders = async () => {
   try {
     const contract = getContract();
-    const orders = await contract.methods.getMyOrders().call();
+    const web3 = getWeb3();
+    const accounts = await web3.eth.getAccounts();
+    const currentAccount = accounts[0];
+
+    const orders = await contract.methods.getMyOrders().call({ from: currentAccount });
     return orders;
   } catch (error) {
     console.error('Error getting my orders:', error);
