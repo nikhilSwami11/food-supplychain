@@ -142,51 +142,35 @@ contract SupplyChain {
         products[_id].orderedBy = msg.sender;
     }
 
-    function getFarmerRequests() public view returns (Product[] memory) {
-        uint256 count = 0;
-
-        for (uint256 i = 0; i < allProductIds.length; i++) {
-            Product memory p = products[allProductIds[i]];
-            // Condition: I am the owner AND it has been ordered
-            if (p.currentOwner == msg.sender && p.state == State.Ordered) {
-                count++;
-            }
-        }
-
-        Product[] memory requests = new Product[](count);
-        uint256 index = 0;
-
-        for (uint256 i = 0; i < allProductIds.length; i++) {
-            Product memory p = products[allProductIds[i]];
-            if (p.currentOwner == msg.sender && p.state == State.Ordered) {
-                requests[index] = p;
-                index++;
-            }
-        }
-
-        return requests;
-    }
-
     function getMyOrders() public view returns (Product[] memory) {
         uint256 count = 0;
 
         for (uint256 i = 0; i < allProductIds.length; i++) {
-            if (products[allProductIds[i]].orderedBy == msg.sender) {
+            Product memory p = products[allProductIds[i]];
+            bool isBuyer = (p.orderedBy == msg.sender);
+            bool isSellerWithOrder = (p.currentOwner == msg.sender &&
+                p.orderedBy != address(0));
+
+            if (isBuyer || isSellerWithOrder) {
                 count++;
             }
         }
-
-        Product[] memory myOrders = new Product[](count);
+        Product[] memory result = new Product[](count);
         uint256 index = 0;
 
         for (uint256 i = 0; i < allProductIds.length; i++) {
-            if (products[allProductIds[i]].orderedBy == msg.sender) {
-                myOrders[index] = products[allProductIds[i]];
+            Product memory p = products[allProductIds[i]];
+
+            bool isBuyer = (p.orderedBy == msg.sender);
+            bool isSellerWithOrder = (p.currentOwner == msg.sender &&
+                p.orderedBy != address(0));
+
+            if (isBuyer || isSellerWithOrder) {
+                result[index] = p;
                 index++;
             }
         }
-
-        return myOrders;
+        return result;
     }
 
     function transferOwnership(uint256 _id, address _newOwner) public {
@@ -199,12 +183,9 @@ contract SupplyChain {
             isAuthorizedEntity[_newOwner],
             "SC: Receiver is not authorized."
         );
-
         address previousOwner = products[_id].currentOwner;
-
         products[_id].currentOwner = _newOwner;
         products[_id].ownershipHistory.push(_newOwner);
-
         emit OwnershipTransferred(_id, previousOwner, _newOwner);
     }
 
@@ -374,7 +355,10 @@ contract SupplyChain {
             // Check if product is delivered and I'm in the ownership history
             if (p.state == State.Delivered) {
                 for (uint256 j = 0; j < p.ownershipHistory.length; j++) {
-                    if (p.ownershipHistory[j] == msg.sender && p.currentOwner != msg.sender) {
+                    if (
+                        p.ownershipHistory[j] == msg.sender &&
+                        p.currentOwner != msg.sender
+                    ) {
                         count++;
                         break;
                     }
@@ -389,7 +373,10 @@ contract SupplyChain {
             Product memory p = products[allProductIds[i]];
             if (p.state == State.Delivered) {
                 for (uint256 j = 0; j < p.ownershipHistory.length; j++) {
-                    if (p.ownershipHistory[j] == msg.sender && p.currentOwner != msg.sender) {
+                    if (
+                        p.ownershipHistory[j] == msg.sender &&
+                        p.currentOwner != msg.sender
+                    ) {
                         history[index] = p;
                         index++;
                         break;
