@@ -77,12 +77,7 @@ const ProductDetailsModal = ({ show, onHide, product, history }) => {
                     </Badge>
                   </td>
                 </tr>
-                <tr>
-                  <th>IPFS Hash:</th>
-                  <td className="text-break">
-                    {product.ipfsHash || 'N/A'}
-                  </td>
-                </tr>
+
               </tbody>
             </table>
           </div>

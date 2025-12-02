@@ -37,21 +37,18 @@ const UpdateStatusModal = ({ show, onHide, productId, currentState, currentIpfsH
     label: ProductStateLabels[value]
   }));
 
-  
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!ipfsData) {
-      setMessage({ type: 'danger', text: 'Please enter IPFS data for this status update' });
-      return;
-    }
+
 
     setIsLoading(true);
     setMessage({ type: '', text: '' });
 
     try {
-      await contract.methods.updateStatus(parseInt(productId), parseInt(newState), ipfsData).send({ from: account });
+      await contract.methods.updateStatus(parseInt(productId), parseInt(newState), "N/A").send({ from: account });
       setMessage({ type: 'success', text: 'Status updated successfully!' });
       setIpfsData('');
       setTimeout(() => {
@@ -110,20 +107,7 @@ const UpdateStatusModal = ({ show, onHide, productId, currentState, currentIpfsH
             </Form.Text>
           </Form.Group>
 
-          <Form.Group className="mb-3">
-            <Form.Label>IPFS Data</Form.Label>
-            <Form.Control
-              as="textarea"
-              rows={3}
-              placeholder="Enter IPFS hash or data for this status update"
-              value={ipfsData}
-              onChange={(e) => setIpfsData(e.target.value)}
-              disabled={isLoading}
-            />
-            <Form.Text className="text-muted">
-              IPFS hash containing details about this status update (location, timestamp, etc.)
-            </Form.Text>
-          </Form.Group>
+
 
           {message.text && (
             <div className={`alert alert-${message.type}`} role="alert">

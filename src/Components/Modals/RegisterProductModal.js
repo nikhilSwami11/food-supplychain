@@ -24,7 +24,7 @@ const RegisterProductModal = ({ show, onHide }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.productId || !formData.productName || !formData.origin || !formData.ipfsHash) {
+    if (!formData.productId || !formData.productName || !formData.origin) {
       setMessage({ type: 'danger', text: 'Please fill in all fields' });
       return;
     }
@@ -37,7 +37,7 @@ const RegisterProductModal = ({ show, onHide }) => {
         parseInt(formData.productId),
         formData.productName,
         formData.origin,
-        formData.ipfsHash
+        "N/A"
       );
       setMessage({ type: 'success', text: 'Product registered successfully!' });
       setFormData({ productId: '', productName: '', origin: '', ipfsHash: '' });
@@ -101,20 +101,7 @@ const RegisterProductModal = ({ show, onHide }) => {
             />
           </Form.Group>
 
-          <Form.Group className="mb-3">
-            <Form.Label>IPFS Hash</Form.Label>
-            <Form.Control
-              type="text"
-              name="ipfsHash"
-              placeholder="Enter IPFS hash for product data"
-              value={formData.ipfsHash}
-              onChange={handleChange}
-              disabled={isLoading}
-            />
-            <Form.Text className="text-muted">
-              IPFS hash for storing additional product information
-            </Form.Text>
-          </Form.Group>
+
 
           {message.text && (
             <div className={`alert alert-${message.type}`} role="alert">
