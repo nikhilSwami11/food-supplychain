@@ -11,16 +11,16 @@ The core of the system is the **SupplyChain.sol** smart contract, which consolid
 
 The system is organized into three interconnected, logical modules, listed below:
 
-1.  **Traceability System:** Tracks the location and movement of each product via a unique serial ID.
-2.  **Trading Mechanism:** Allows for secure, cryptographically verifiable transfer of product ownership between verified stakeholders (e.g., Farmer to Distributor).
-3.  **(Future) Reputation System:** Designed to incorporate immutable consumer reviews to build consumer trust.
+1.  **Traceability System:** Tracks the location and movement of each product via a unique serial ID using **Event-Based Logging** for gas efficiency.
+2.  **Trading Mechanism:** Allows for secure, cryptographically verifiable transfer of product ownership between verified stakeholders (Farmer, Distributor, Consumer).
+3.  **State Management:** Utilizes a centralized `SupplyChainContext` to manage authentication, contract interaction, and role-based access control (RBAC) across the DApp.
 
 ### Key Features
-- **Decentralized Traceability**: Immutable record of product ownership and movement
-- **Role-Based Access Control**: Different permissions for farmers, distributors, retailers, and consumers
-- **Product Authentication**: Verify product authenticity and ownership history
-- **Transparent Supply Chain**: Complete visibility into product journey
-- **Tamper-Proof Records**: Blockchain ensures data integrity
+- **Decentralized Traceability**: Immutable record of product ownership and movement via Solidity Events.
+- **Role-Based Access Control**: Strict permissions for Admin, Farmer, Distributor, and Consumer roles.
+- **Product Authentication**: Verify product authenticity and ownership history.
+- **Transparent Supply Chain**: Complete visibility into product journey (Created -> Ordered -> In Transit -> Stored -> Delivered).
+- **Tamper-Proof Records**: Blockchain ensures data integrity.
 
 ---
 
@@ -50,10 +50,11 @@ This project is built using the standard Ethereum development stack.
 The DApp workflow is strictly controlled by **Role-Based Access Control (RBAC)** enforced in the contract:
 
 1.  **Connect Wallet:** Connect MetaMask to the Ganache local blockchain.
-2.  **Admin Setup:** The **`contractOwner`** (the account that deployed the contract) calls `setFarmerRole(address)` to authorize initial stakeholders.
-3.  **Register Product (Farmer):** A verified Farmer uses `registerProduct()` to create an item and inject it into the supply chain.
-4.  **Transfer Ownership (Trading):** The current owner calls `transferOwnership(new_owner_address)` to move the item to the next stakeholder.
-5.  **View Traceability:** Any user can call the view function `getProductHistory(id)` on the web interface to view the complete, immutable path of the product.
+2.  **Admin Setup:** The **`contractOwner`** calls `setFarmerRole(address)` and `setEntityRole(address)` to authorize Farmers and Distributors.
+3.  **Register Product (Farmer):** A verified Farmer uses `registerProduct()` to create an item.
+4.  **Place Order (Consumer):** A Consumer views available products and calls `placeOrder()` to initiate a purchase.
+5.  **Transfer & Deliver (Distributor):** The Farmer transfers to a Distributor, who then manages the logistics (In Transit -> Stored -> Delivered) using `updateStatus()`.
+6.  **View Traceability:** Any user can view the complete, immutable history of the product, fetched from blockchain **Events**.
 
 ## 4. Draft Contract Components and Signatures
 
@@ -61,13 +62,15 @@ The core logic resides in `contracts/SupplyChain.sol`. This table outlines the p
 
 | Function/Component | Signature/Interface | High-Level Functionality |
 | :--- | :--- | :--- |
-| **`Product` Struct** | `struct Product { ... }` | Defines the physical asset (ID, name, owner, origin, history). |
-| **`setFarmerRole()`** | `function setFarmerRole(address _user) public onlyOwner` | **Admin function** used by the `contractOwner` to grant permission to a Farmer address. |
-| **`registerProduct()`** | `function registerProduct(uint256 _id, string memory _name, string memory _origin) public onlyFarmer` | Registers a new product. Restricted to authorized Farmers via the `onlyFarmer` modifier. |
-| **`transferOwnership()`** | `function transferOwnership(uint256 _id, address _newOwner) public` | Updates product ownership to track movement (Trading Module). Requires caller to be the current owner. |
-| **`getProductHistory()`** | `function getProductHistory(uint256 _id) public view returns (address[] memory)` | **Retrieves the complete, historical trace** of all addresses that have owned the product (Traceability). |
-| **`verifyProduct()`** | `function verifyProduct(uint256 _id) public view returns (bool)` | Checks and returns the current authenticity status of the product. |
-| **`onlyFarmer`** | `modifier onlyFarmer()` | Reusable code used to enforce that only verified addresses can register products. |
+| **`Product` Struct** | `struct Product { ... }` | Defines the physical asset (ID, name, owner, origin, state, history). |
+| **`setFarmerRole()`** | `function setFarmerRole(address _user) public onlyOwner` | **Admin function** to grant Farmer role. |
+| **`setEntityRole()`** | `function setEntityRole(address _user) public onlyOwner` | **Admin function** to grant Distributor role. |
+| **`registerProduct()`** | `function registerProduct(...) public onlyFarmer` | Registers a new product (State: Created). |
+| **`placeOrder()`** | `function placeOrder(uint256 _id) public` | Consumer places an order for a product (State: Ordered). |
+| **`updateStatus()`** | `function updateStatus(uint256 _id, State _state, string _ipfs) public` | Updates the product status (In Transit, Stored, Delivered). |
+| **`transferOwnership()`** | `function transferOwnership(uint256 _id, address _newOwner) public` | Transfers legal ownership of the asset. |
+| **`getProductHistory()`** | *(Frontend Only)* | Retrieves history by querying **indexed Events** (`ProductRegistered`, `OwnershipTransferred`, `StatusUpdated`). |
+| **`onlyFarmer`** | `modifier onlyFarmer()` | Restricts access to verified Farmers. |
 
 ---
 
