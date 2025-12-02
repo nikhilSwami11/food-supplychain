@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 import { Modal, Button, Badge } from 'react-bootstrap';
-import { useAuth } from '../../Services/Contexts/AuthContext';
-import { useContract } from '../../Services/Contexts/ContractContext';
+import { useSupplyChain } from '../../Services/Contexts/SupplyChainContext';
 import TransferOwnershipModal from './TransferOwnershipModal';
 import UpdateStatusModal from './UpdateStatusModal';
 
 
 const ProductDetailsModal = ({ show, onHide, product, history }) => {
-  const { account } = useAuth();
-  const { isFarmer, isDistributor } = useContract();
+  const { account, isFarmer, isDistributor, updateStatus } = useSupplyChain();
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [showUpdateStatusModal, setShowUpdateStatusModal] = useState(false);
 
@@ -163,4 +161,5 @@ const ProductDetailsModal = ({ show, onHide, product, history }) => {
 };
 
 export default ProductDetailsModal;
+
 

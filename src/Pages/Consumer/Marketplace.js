@@ -7,8 +7,7 @@ import './Consumer.css';
  * Shows all available products (in Created state) that consumers can order
  */
 const Marketplace = () => {
-  const { isConnected, consumer } = useSupplyChain();
-  const { getAvailableProducts, placeOrder, isFarmer } = useContract();
+  const { isConnected, consumer, getAvailableProducts, placeOrder, isFarmer } = useSupplyChain();
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState({});

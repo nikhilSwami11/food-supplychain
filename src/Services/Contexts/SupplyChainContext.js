@@ -337,6 +337,10 @@ export const SupplyChainProvider = ({ children }) => {
   const isDistributor = role === Role.DISTRIBUTOR;
   const isConsumer = role === Role.CONSUMER;
 
+  // Top-level convenience functions
+  const getProductHistory = common.getProductHistory;
+  const getMyOrders = consumer.getMyOrders;
+
   return (
     <SupplyChainContext.Provider value={{
       // Connection state
@@ -349,6 +353,9 @@ export const SupplyChainProvider = ({ children }) => {
 
       // Role-based function namespaces
       common, admin, farmer, distributor, consumer,
+
+      // Top-level convenience functions
+      getProductHistory, getMyOrders,
 
       // State enums for reference
       ProductState, ProductStateLabels, Role

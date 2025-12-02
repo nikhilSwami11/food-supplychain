@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import { useAuth } from './AuthContext';
+import { useSupplyChain } from './SupplyChainContext';
 import {
   initContract,
   registerProduct as registerProductUtil,
@@ -27,16 +27,8 @@ import SupplyChain from '../../Smart-Contract/SupplyChain.json';
 
 const ContractContext = createContext();
 
-export const useContract = () => {
-  const context = useContext(ContractContext);
-  if (!context) {
-    throw new Error('useContract must be used within ContractProvider');
-  }
-  return context;
-};
-
 export const ContractProvider = ({ children }) => {
-  const { web3, account, isConnected } = useAuth();
+  const { web3, account, isConnected } = useSupplyChain();
   const [contract, setContract] = useState(null);
   const [contractOwner, setContractOwner] = useState(null);
   const [isFarmer, setIsFarmer] = useState(false);

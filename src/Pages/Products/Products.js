@@ -28,8 +28,8 @@ const Products = () => {
       if (product.id === '0') {
         setSearchError('Product not found');
       } else {
-        setSelectedProduct(result.product);
-        const historyResult = await getProductHistory(result.product.id);
+        setSelectedProduct(product);
+        const historyResult = await getProductHistory(product.id);
         if (historyResult.success) {
           setProductHistory(historyResult.history);
         } else {

@@ -4,8 +4,7 @@ import { useSupplyChain, ProductState, ProductStateLabels } from '../../Services
 
 
 const UpdateStatusModal = ({ show, onHide, productId, currentState, currentIpfsHash }) => {
-  const { updateStatus } = useContract();
-  const { contract, account } = useSupplyChain();
+  const { contract, account, updateStatus } = useSupplyChain();
   const [newState, setNewState] = useState(currentState ? currentState + 1 : 0);
   const [ipfsData, setIpfsData] = useState(currentIpfsHash || '');
   const [isLoading, setIsLoading] = useState(false);

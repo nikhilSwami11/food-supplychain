@@ -8,14 +8,6 @@ import { initWeb3, onAccountChange, onNetworkChange } from '../Utils/web3Utils';
 
 const AuthContext = createContext();
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
-  }
-  return context;
-};
-
 export const AuthProvider = ({ children }) => {
   const [account, setAccount] = useState(null);
   const [web3, setWeb3] = useState(null);

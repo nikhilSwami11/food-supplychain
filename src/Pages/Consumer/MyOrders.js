@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../Services/Contexts/AuthContext';
-import { useContract } from '../../Services/Contexts/ContractContext';
 import { useSupplyChain, ProductStateLabels } from '../../Services/Contexts/SupplyChainContext';
 import TransferOwnershipModal from '../../Components/Modals/TransferOwnershipModal';
 import UpdateStatusModal from '../../Components/Modals/UpdateStatusModal';
@@ -24,7 +22,7 @@ const MyOrders = () => {
     setIsLoading(true);
     try {
       const myOrders = await consumer.getMyOrders();
-      const uniqueOrders = Array.from(new Map(result.orders.map(item => [item.id, item])).values());
+      const uniqueOrders = Array.from(new Map(myOrders.orders.map(item => [item.id, item])).values());
       setOrders(uniqueOrders);
     } catch (err) {
       console.error('Error loading orders:', err);
