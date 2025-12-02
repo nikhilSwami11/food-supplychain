@@ -28,6 +28,7 @@ const ReceivedProducts = () => {
     if (isConnected && isDistributor) {
       loadProducts();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isConnected, isDistributor]);
 
   const handleMarkAsStored = async (productId) => {
