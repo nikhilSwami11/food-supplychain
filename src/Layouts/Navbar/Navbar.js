@@ -47,89 +47,89 @@ const Navbar = () => {
           <Link className="navbar-brand" to="/">
             Supply Chain Blockchain
           </Link>
-        
-        <button
-          className="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-        >
-          <span className="navbar-toggler-icon"></span>
-        </button>
 
-        <div className="collapse navbar-collapse" id="navbarNav">
-          <ul className="navbar-nav me-auto">
-            <li className="nav-item">
-              <Link className="nav-link" to="/dashboard">
-                Dashboard
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link" to="/products">
-                Products
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link" to="/farmers">
-                Farmers
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link" to="/marketplace">
-                Marketplace
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link" to="/my-orders">
-                My Orders
-              </Link>
-            </li>
-            {isDistributor && (
+          <button
+            className="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarNav"
+          >
+            <span className="navbar-toggler-icon"></span>
+          </button>
+
+          <div className="collapse navbar-collapse" id="navbarNav">
+            <ul className="navbar-nav me-auto">
               <li className="nav-item">
-                <Link className="nav-link" to="/distributor">
-                  Distributor
+                <Link className="nav-link" to="/dashboard">
+                  Dashboard
                 </Link>
               </li>
-            )}
-            {isAdmin && (
               <li className="nav-item">
-                <Link className="nav-link" to="/admin">
-                  Admin
+                <Link className="nav-link" to="/products">
+                  Products
                 </Link>
               </li>
-            )}
-            <li className="nav-item">
-              <Link className="nav-link" to="/profile">
-                Profile
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link text-warning" to="/debug">
-                🔍 Debug
-              </Link>
-            </li>
-          </ul>
+              <li className="nav-item">
+                <Link className="nav-link" to="/farmers">
+                  Farmers
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link className="nav-link" to="/marketplace">
+                  Marketplace
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link className="nav-link" to="/my-orders">
+                  {isFarmer ? 'Orders' : 'My Orders'}
+                </Link>
+              </li>
+              {isDistributor && (
+                <li className="nav-item">
+                  <Link className="nav-link" to="/distributor">
+                    Distributor
+                  </Link>
+                </li>
+              )}
+              {isAdmin && (
+                <li className="nav-item">
+                  <Link className="nav-link" to="/admin">
+                    Admin
+                  </Link>
+                </li>
+              )}
+              <li className="nav-item">
+                <Link className="nav-link" to="/profile">
+                  Profile
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link className="nav-link text-warning" to="/debug">
+                  🔍 Debug
+                </Link>
+              </li>
+            </ul>
 
-          <div className="d-flex align-items-center">
-            {isConnected && (
-              <div className="me-3">
-                {isAdmin && <span className="badge bg-danger me-2">Admin</span>}
-                {isFarmer && <span className="badge bg-success me-2">Farmer</span>}
-                {isDistributor && <span className="badge bg-info me-2">Distributor</span>}
-                {!isAdmin && !isFarmer && !isDistributor && <span className="badge bg-secondary me-2">Consumer</span>}
-                <span className="text-light">{formatAddress(account)}</span>
-              </div>
-            )}
-            <button
-              className={`btn ${isConnected ? 'btn-outline-danger' : 'btn-outline-success'}`}
-              onClick={handleConnect}
-            >
-              {isConnected ? 'Disconnect' : 'Connect Wallet'}
-            </button>
+            <div className="d-flex align-items-center">
+              {isConnected && (
+                <div className="me-3">
+                  {isAdmin && <span className="badge bg-danger me-2">Admin</span>}
+                  {isFarmer && <span className="badge bg-success me-2">Farmer</span>}
+                  {isDistributor && <span className="badge bg-info me-2">Distributor</span>}
+                  {!isAdmin && !isFarmer && !isDistributor && <span className="badge bg-secondary me-2">Consumer</span>}
+                  <span className="text-light">{formatAddress(account)}</span>
+                </div>
+              )}
+              <button
+                className={`btn ${isConnected ? 'btn-outline-danger' : 'btn-outline-success'}`}
+                onClick={handleConnect}
+              >
+                {isConnected ? 'Disconnect' : 'Connect Wallet'}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    </nav>
+      </nav>
     </>
   );
 };

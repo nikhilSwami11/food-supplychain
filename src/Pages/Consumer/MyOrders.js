@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../Services/Contexts/AuthContext';
 import { useContract } from '../../Services/Contexts/ContractContext';
+import TransferOwnershipModal from '../../Components/Modals/TransferOwnershipModal';
+import UpdateStatusModal from '../../Components/Modals/UpdateStatusModal';
 import './Consumer.css';
 
 /**
@@ -8,19 +10,23 @@ import './Consumer.css';
  * Shows all products ordered by the current user
  */
 const MyOrders = () => {
-  const { isConnected } = useAuth();
-  const { getMyOrders, getProductHistory } = useContract();
+  const { isConnected, account } = useAuth();
+  const { getMyOrders, getProductHistory, isFarmer } = useContract();
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [showTransferModal, setShowTransferModal] = useState(false);
+  const [showUpdateStatusModal, setShowUpdateStatusModal] = useState(false);
   const [history, setHistory] = useState([]);
 
   const loadOrders = async () => {
     setIsLoading(true);
     const result = await getMyOrders();
     if (result.success) {
-      setOrders(result.orders);
+      // Deduplicate orders based on product ID
+      const uniqueOrders = Array.from(new Map(result.orders.map(item => [item.id, item])).values());
+      setOrders(uniqueOrders);
     }
     setIsLoading(false);
   };
@@ -39,6 +45,22 @@ const MyOrders = () => {
       setHistory(result.history);
       setShowHistoryModal(true);
     }
+  };
+
+  const handleTransfer = (product) => {
+    setSelectedProduct(product);
+    setShowTransferModal(true);
+  };
+
+  const handleUpdateStatus = (product) => {
+    setSelectedProduct(product);
+    setShowUpdateStatusModal(true);
+  };
+
+  const handleModalClose = () => {
+    setShowTransferModal(false);
+    setShowUpdateStatusModal(false);
+    loadOrders(); // Refresh list after action
   };
 
   const getStateLabel = (state) => {
@@ -81,7 +103,7 @@ const MyOrders = () => {
   return (
     <div className="container">
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h1>My Orders</h1>
+        <h1>{isFarmer ? 'Orders' : 'My Orders'}</h1>
         <button className="btn btn-outline-primary" onClick={loadOrders}>
           <i className="bi bi-arrow-clockwise me-2"></i>
           Refresh
@@ -140,13 +162,33 @@ const MyOrders = () => {
                   </div>
                 </div>
                 <div className="card-footer bg-transparent">
-                  <button
-                    className="btn btn-outline-primary w-100"
-                    onClick={() => handleViewHistory(order)}
-                  >
-                    <i className="bi bi-clock-history me-2"></i>
-                    View History
-                  </button>
+                  <div className="d-grid gap-2">
+                    <button
+                      className="btn btn-outline-primary"
+                      onClick={() => handleViewHistory(order)}
+                    >
+                      <i className="bi bi-clock-history me-2"></i>
+                      View History
+                    </button>
+                    {isFarmer && order.currentOwner.toLowerCase() === account.toLowerCase() && (
+                      <>
+                        <button
+                          className="btn btn-outline-success"
+                          onClick={() => handleUpdateStatus(order)}
+                        >
+                          <i className="bi bi-pencil-square me-2"></i>
+                          Update Status
+                        </button>
+                        <button
+                          className="btn btn-outline-warning"
+                          onClick={() => handleTransfer(order)}
+                        >
+                          <i className="bi bi-arrow-right-circle me-2"></i>
+                          Transfer Ownership
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -175,19 +217,25 @@ const MyOrders = () => {
                 <p className="text-muted">Product ID: {selectedProduct?.id}</p>
                 <hr />
                 <div className="timeline">
-                  {history.map((owner, index) => (
+                  {history.map((event, index) => (
                     <div key={index} className="timeline-item mb-3">
                       <div className="d-flex align-items-center">
-                        <div className="timeline-marker bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style={{ width: '30px', height: '30px', minWidth: '30px' }}>
-                          {index + 1}
+                        <div className={`timeline-marker text-white rounded-circle d-flex align-items-center justify-content-center ${event.type === 'Registered' ? 'bg-success' :
+                          event.type === 'Transferred' ? 'bg-warning' : 'bg-primary'
+                          }`} style={{ width: '30px', height: '30px', minWidth: '30px' }}>
+                          <i className={`bi ${event.type === 'Registered' ? 'bi-star-fill' :
+                            event.type === 'Transferred' ? 'bi-arrow-right' : 'bi-arrow-repeat'
+                            } small`}></i>
                         </div>
                         <div className="ms-3 flex-grow-1">
-                          <small className="text-muted">
-                            {index === 0 ? 'Created by' : index === history.length - 1 ? 'Current Owner' : 'Transferred to'}
-                          </small>
-                          <div className="font-monospace small text-break">
-                            {owner}
+                          <div className="d-flex justify-content-between">
+                            <strong>{event.type}</strong>
+                            <small className="text-muted">Block: {event.blockNumber}</small>
                           </div>
+                          <p className="mb-1 small">{event.details}</p>
+                          <small className="text-muted d-block">
+                            Actor: <span className="font-monospace">{event.user}</span>
+                          </small>
                         </div>
                       </div>
                       {index < history.length - 1 && (
@@ -210,6 +258,20 @@ const MyOrders = () => {
           </div>
         </div>
       )}
+
+      <TransferOwnershipModal
+        show={showTransferModal}
+        onHide={handleModalClose}
+        productId={selectedProduct?.id}
+      />
+
+      <UpdateStatusModal
+        show={showUpdateStatusModal}
+        onHide={handleModalClose}
+        productId={selectedProduct?.id}
+        currentState={selectedProduct?.state}
+        currentIpfsHash={selectedProduct?.ipfsHash}
+      />
     </div>
   );
 };

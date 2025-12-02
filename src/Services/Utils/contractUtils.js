@@ -122,22 +122,48 @@ export const getProductHistory = async (productId) => {
       toBlock: 'latest'
     });
 
+    // Get status update events
+    const statusEvents = await contract.getPastEvents('StatusUpdated', {
+      filter: { productId: productId },
+      fromBlock: 0,
+      toBlock: 'latest'
+    });
+
     let history = [];
 
-    // Add initial owner (Farmer)
-    if (registrationEvents.length > 0) {
-      // Sort by block number just in case, though usually one registration per ID
-      registrationEvents.sort((a, b) => a.blockNumber - b.blockNumber);
-      history.push(registrationEvents[0].returnValues.farmer);
-    }
-
-    // Sort transfers by block number
-    transferEvents.sort((a, b) => a.blockNumber - b.blockNumber);
-
-    // Add subsequent owners
-    transferEvents.forEach(event => {
-      history.push(event.returnValues.to);
+    // Process Registration
+    registrationEvents.forEach(event => {
+      history.push({
+        type: 'Registered',
+        user: event.returnValues.farmer,
+        blockNumber: event.blockNumber,
+        details: 'Product Created'
+      });
     });
+
+    // Process Transfers
+    transferEvents.forEach(event => {
+      history.push({
+        type: 'Transferred',
+        user: event.returnValues.to,
+        blockNumber: event.blockNumber,
+        details: `Transferred from ${event.returnValues.from}`
+      });
+    });
+
+    // Process Status Updates
+    const statusLabels = ['Created', 'Ordered', 'In Transit', 'Stored', 'Delivered'];
+    statusEvents.forEach(event => {
+      history.push({
+        type: 'StatusUpdated',
+        user: event.returnValues.actor || 'Unknown', // Ensure contract emits actor
+        blockNumber: event.blockNumber,
+        details: `Status updated to ${statusLabels[event.returnValues.newState]}`
+      });
+    });
+
+    // Sort by block number
+    history.sort((a, b) => a.blockNumber - b.blockNumber);
 
     return history;
   } catch (error) {

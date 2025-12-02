@@ -44,7 +44,7 @@ contract SupplyChain {
         address indexed from,
         address indexed to
     );
-    event StatusUpdated(uint256 productId, State newState, string ipfsData);
+    event StatusUpdated(uint256 productId, State newState, string ipfsData, address actor);
 
     modifier onlyOwner() {
         require(
@@ -141,6 +141,8 @@ contract SupplyChain {
         products[_id].state = State.Ordered;
         products[_id].orderedBy = msg.sender;
         _ordersByUser[msg.sender].push(_id);
+
+        emit StatusUpdated(_id, State.Ordered, "Ordered by Consumer", msg.sender);
     }
 
     function getMyOrders() public view returns (Product[] memory) {
@@ -152,7 +154,8 @@ contract SupplyChain {
         uint256[] memory myProductIds = _productsByOwner[msg.sender];
         for(uint256 i = 0; i < myProductIds.length; i++) {
              Product memory p = products[myProductIds[i]];
-             if (p.currentOwner == msg.sender && p.orderedBy != address(0)) {
+             // Skip if I ordered it (already counted above)
+             if (p.currentOwner == msg.sender && p.orderedBy != address(0) && p.orderedBy != msg.sender) {
                  count++;
              }
         }
@@ -169,7 +172,8 @@ contract SupplyChain {
         // Add my sales
         for (uint256 i = 0; i < myProductIds.length; i++) {
              Product memory p = products[myProductIds[i]];
-             if (p.currentOwner == msg.sender && p.orderedBy != address(0)) {
+             // Skip if I ordered it (already added above)
+             if (p.currentOwner == msg.sender && p.orderedBy != address(0) && p.orderedBy != msg.sender) {
                  result[index] = p;
                  index++;
              }
@@ -194,17 +198,23 @@ contract SupplyChain {
 
     function updateStatus(
         uint256 _id,
-        State _newState,
+        State _state,
         string calldata _ipfsData
-    ) public {
+    ) public onlyAuthorized {
+        require(products[_id].id != 0, "SC: Product not found.");
         require(
             products[_id].currentOwner == msg.sender,
-            "SC: Only current owner can update status."
+            "SC: You are not the owner."
+        );
+        require(
+            uint256(_state) > uint256(products[_id].state),
+            "SC: Status can only move forward."
         );
 
-        // Update the Status
-        products[_id].state = _newState;
-        emit StatusUpdated(_id, _newState, _ipfsData);
+        products[_id].state = _state;
+        products[_id].ipfsHash = _ipfsData;
+
+        emit StatusUpdated(_id, _state, _ipfsData, msg.sender);
     }
 
     function getProduct(
