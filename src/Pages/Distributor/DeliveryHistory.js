@@ -26,6 +26,7 @@ const DeliveryHistory = () => {
     if (isConnected && isDistributor) {
       loadHistory();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isConnected, isDistributor]);
 
   if (!isConnected) {

@@ -28,6 +28,7 @@ const Marketplace = () => {
     if (isConnected) {
       loadProducts();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isConnected]);
 
   const handleOrder = async (productId) => {

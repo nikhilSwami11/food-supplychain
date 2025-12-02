@@ -29,6 +29,7 @@ const MyOrders = () => {
     if (isConnected) {
       loadOrders();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isConnected]);
 
   const handleViewHistory = async (product) => {

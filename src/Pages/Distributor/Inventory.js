@@ -29,6 +29,7 @@ const Inventory = () => {
     if (isConnected && isDistributor) {
       loadInventory();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isConnected, isDistributor]);
 
   const getStateLabel = (state) => {

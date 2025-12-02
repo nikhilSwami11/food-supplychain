@@ -778,6 +778,7 @@ export const ContractProvider = ({ children }) => {
         setError(err.message);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isConnected, web3]);
 
 

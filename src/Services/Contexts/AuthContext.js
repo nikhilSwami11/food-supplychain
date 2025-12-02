@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import { initWeb3, getCurrentAccount, onAccountChange, onNetworkChange } from '../Utils/web3Utils';
+import { initWeb3, onAccountChange, onNetworkChange } from '../Utils/web3Utils';
 
 /**
  * Authentication Context
@@ -99,6 +99,7 @@ export const AuthProvider = ({ children }) => {
       onAccountChange(handleAccountChange);
       onNetworkChange(handleNetworkChange);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isConnected]);
 
   const value = {
