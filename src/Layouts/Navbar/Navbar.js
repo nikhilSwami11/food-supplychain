@@ -5,7 +5,7 @@ import './Navbar.css';
 
 
 const Navbar = () => {
-  const { account, isConnected, connectWallet, disconnectWallet, error, isAdmin, isFarmer, isDistributor } = useSupplyChain();
+  const { account, isConnected, connectWallet, disconnectWallet, error, isAdmin, isFarmer, isDistributor, isConsumer } = useSupplyChain();
   const [showError, setShowError] = useState(false);
 
   const handleConnect = async () => {
@@ -67,21 +67,20 @@ const Navbar = () => {
                 Products
               </Link>
             </li>
-            <li className="nav-item">
-              <Link className="nav-link" to="/farmers">
-                Farmers
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link" to="/marketplace">
-                Marketplace
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link" to="/my-orders">
-                My Orders
-              </Link>
-            </li>
+            {(isConsumer || isFarmer || isAdmin) && (
+              <li className="nav-item">
+                <Link className="nav-link" to="/marketplace">
+                  Marketplace
+                </Link>
+              </li>
+            )}
+            {(isConsumer || isAdmin) && (
+              <li className="nav-item">
+                <Link className="nav-link" to="/my-orders">
+                  My Orders
+                </Link>
+              </li>
+            )}
             {isFarmer && (
               <li className="nav-item">
                 <Link className="nav-link" to="/farmer/orders">
@@ -108,11 +107,13 @@ const Navbar = () => {
                 Profile
               </Link>
             </li>
-            <li className="nav-item">
-              <Link className="nav-link text-warning" to="/debug">
-                🔍 Debug
-              </Link>
-            </li>
+            {isAdmin && (
+              <li className="nav-item">
+                <Link className="nav-link text-warning" to="/debug">
+                  🔍 Debug
+                </Link>
+              </li>
+            )}
           </ul>
 
             <div className="d-flex align-items-center">

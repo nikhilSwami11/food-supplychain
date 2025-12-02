@@ -23,6 +23,9 @@ yarn-error.log*
 # Truffle
 src/Smart-Contract/build/
 
+#SupplyChain.json
+src/Smart-Contract/SupplyChain.json
+
 # IDE
 .vscode/
 .idea/
