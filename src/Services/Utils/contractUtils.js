@@ -90,7 +90,8 @@ export const getProduct = async (productId) => {
       origin: product[3],
       isAuthentic: product[4],
       state: product[5],
-      ipfsHash: product[6]
+      ipfsHash: product[6],
+      orderedBy: product[7]
     };
   } catch (error) {
     console.error('Error getting product:', error);
@@ -99,14 +100,71 @@ export const getProduct = async (productId) => {
 };
 
 /**
- * Get product ownership history
+ * Get product ownership history from events
  * @param {number} productId - Product ID
  * @returns {Array} Array of owner addresses
  */
 export const getProductHistory = async (productId) => {
   try {
     const contract = getContract();
-    const history = await contract.methods.getProductHistory(productId).call();
+
+    // Get registration event (first owner)
+    const registrationEvents = await contract.getPastEvents('ProductRegistered', {
+      filter: { productId: productId },
+      fromBlock: 0,
+      toBlock: 'latest'
+    });
+
+    // Get transfer events (subsequent owners)
+    const transferEvents = await contract.getPastEvents('OwnershipTransferred', {
+      filter: { productId: productId },
+      fromBlock: 0,
+      toBlock: 'latest'
+    });
+
+    // Get status update events
+    const statusEvents = await contract.getPastEvents('StatusUpdated', {
+      filter: { productId: productId },
+      fromBlock: 0,
+      toBlock: 'latest'
+    });
+
+    let history = [];
+
+    // Process Registration
+    registrationEvents.forEach(event => {
+      history.push({
+        type: 'Registered',
+        user: event.returnValues.farmer,
+        blockNumber: event.blockNumber,
+        details: 'Product Created'
+      });
+    });
+
+    // Process Transfers
+    transferEvents.forEach(event => {
+      history.push({
+        type: 'Transferred',
+        user: event.returnValues.to,
+        blockNumber: event.blockNumber,
+        details: `Transferred from ${event.returnValues.from}`
+      });
+    });
+
+    // Process Status Updates
+    const statusLabels = ['Created', 'Ordered', 'In Transit', 'Stored', 'Delivered'];
+    statusEvents.forEach(event => {
+      history.push({
+        type: 'StatusUpdated',
+        user: event.returnValues.actor || 'Unknown', // Ensure contract emits actor
+        blockNumber: event.blockNumber,
+        details: `Status updated to ${statusLabels[event.returnValues.newState]}`
+      });
+    });
+
+    // Sort by block number
+    history.sort((a, b) => a.blockNumber - b.blockNumber);
+
     return history;
   } catch (error) {
     console.error('Error getting product history:', error);

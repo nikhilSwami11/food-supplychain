@@ -45,15 +45,15 @@ const Navbar = () => {
           <Link className="navbar-brand" to="/">
             Supply Chain Blockchain
           </Link>
-        
-        <button
-          className="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-        >
-          <span className="navbar-toggler-icon"></span>
-        </button>
+
+          <button
+            className="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarNav"
+          >
+            <span className="navbar-toggler-icon"></span>
+          </button>
 
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav me-auto">
@@ -115,26 +115,26 @@ const Navbar = () => {
             </li>
           </ul>
 
-          <div className="d-flex align-items-center">
-            {isConnected && (
-              <div className="me-3">
-                {isAdmin && <span className="badge bg-danger me-2">Admin</span>}
-                {isFarmer && <span className="badge bg-success me-2">Farmer</span>}
-                {isDistributor && <span className="badge bg-info me-2">Distributor</span>}
-                {!isAdmin && !isFarmer && !isDistributor && <span className="badge bg-secondary me-2">Consumer</span>}
-                <span className="text-light">{formatAddress(account)}</span>
-              </div>
-            )}
-            <button
-              className={`btn ${isConnected ? 'btn-outline-danger' : 'btn-outline-success'}`}
-              onClick={handleConnect}
-            >
-              {isConnected ? 'Disconnect' : 'Connect Wallet'}
-            </button>
+            <div className="d-flex align-items-center">
+              {isConnected && (
+                <div className="me-3">
+                  {isAdmin && <span className="badge bg-danger me-2">Admin</span>}
+                  {isFarmer && <span className="badge bg-success me-2">Farmer</span>}
+                  {isDistributor && <span className="badge bg-info me-2">Distributor</span>}
+                  {!isAdmin && !isFarmer && !isDistributor && <span className="badge bg-secondary me-2">Consumer</span>}
+                  <span className="text-light">{formatAddress(account)}</span>
+                </div>
+              )}
+              <button
+                className={`btn ${isConnected ? 'btn-outline-danger' : 'btn-outline-success'}`}
+                onClick={handleConnect}
+              >
+                {isConnected ? 'Disconnect' : 'Connect Wallet'}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    </nav>
+      </nav>
     </>
   );
 };

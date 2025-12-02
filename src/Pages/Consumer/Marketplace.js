@@ -8,6 +8,7 @@ import './Consumer.css';
  */
 const Marketplace = () => {
   const { isConnected, consumer } = useSupplyChain();
+  const { getAvailableProducts, placeOrder, isFarmer } = useContract();
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState({});
@@ -141,23 +142,29 @@ const Marketplace = () => {
                   </div>
                 </div>
                 <div className="card-footer bg-transparent">
-                  <button
-                    className="btn btn-primary w-100"
-                    onClick={() => handleOrder(product.id)}
-                    disabled={actionLoading[product.id]}
-                  >
-                    {actionLoading[product.id] ? (
-                      <>
-                        <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                        Ordering...
-                      </>
-                    ) : (
-                      <>
-                        <i className="bi bi-cart-plus me-2"></i>
-                        Order Now
-                      </>
-                    )}
-                  </button>
+                  {actionLoading[product.id] ? (
+                    <button className="btn btn-primary w-100" disabled>
+                      <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                      Ordering...
+                    </button>
+                  ) : (
+                    <div className="d-grid">
+                      {!isFarmer && (
+                        <button
+                          className="btn btn-primary"
+                          onClick={() => handleOrder(product.id)}
+                        >
+                          <i className="bi bi-cart-plus me-2"></i>
+                          Order Now
+                        </button>
+                      )}
+                      {isFarmer && (
+                        <button className="btn btn-secondary" disabled>
+                          Farmers cannot order
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

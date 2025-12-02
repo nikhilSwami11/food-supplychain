@@ -8,11 +8,12 @@ import './Products.css';
  * Products Page
  */
 const Products = () => {
-  const { isConnected, isFarmer, common } = useSupplyChain();
+  const { isConnected, isFarmer, common, getProduct, getProductHistory } = useSupplyChain();
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [searchId, setSearchId] = useState('');
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [productHistory, setProductHistory] = useState([]);
   const [searchError, setSearchError] = useState('');
 
   const handleSearch = async () => {
@@ -27,7 +28,13 @@ const Products = () => {
       if (product.id === '0') {
         setSearchError('Product not found');
       } else {
-        setSelectedProduct(product);
+        setSelectedProduct(result.product);
+        const historyResult = await getProductHistory(result.product.id);
+        if (historyResult.success) {
+          setProductHistory(historyResult.history);
+        } else {
+          setProductHistory([]);
+        }
         setShowDetailsModal(true);
       }
     } catch (err) {
@@ -87,6 +94,9 @@ const Products = () => {
         </div>
       </div>
 
+
+
+
       {/* Info Section */}
       <div className="row">
         <div className="col-md-4 mb-3">
@@ -121,8 +131,9 @@ const Products = () => {
         show={showDetailsModal}
         onHide={() => setShowDetailsModal(false)}
         product={selectedProduct}
+        history={productHistory}
       />
-    </div>
+    </div >
   );
 };
 

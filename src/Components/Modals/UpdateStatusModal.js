@@ -3,17 +3,42 @@ import { Modal, Button, Form } from 'react-bootstrap';
 import { useSupplyChain, ProductState, ProductStateLabels } from '../../Services/Contexts/SupplyChainContext';
 
 
-const UpdateStatusModal = ({ show, onHide, productId, currentState }) => {
+const UpdateStatusModal = ({ show, onHide, productId, currentState, currentIpfsHash }) => {
+  const { updateStatus } = useContract();
   const { contract, account } = useSupplyChain();
-  const [newState, setNewState] = useState(currentState || 0);
-  const [ipfsData, setIpfsData] = useState('');
+  const [newState, setNewState] = useState(currentState ? currentState + 1 : 0);
+  const [ipfsData, setIpfsData] = useState(currentIpfsHash || '');
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
+
+  // Update local state when props change
+  React.useEffect(() => {
+    if (show) {
+      const current = parseInt(currentState);
+      // If current state is 4 (Delivered), keep it as 4 (or handle as error), otherwise increment
+      const nextState = !isNaN(current) && current < 4 ? current + 1 : current;
+      setNewState(nextState);
+      setIpfsData(currentIpfsHash || '');
+    }
+  }, [show, currentState, currentIpfsHash]);
+
+  // Update local state when props change
+  React.useEffect(() => {
+    if (show) {
+      const current = parseInt(currentState);
+      // If current state is 4 (Delivered), keep it as 4 (or handle as error), otherwise increment
+      const nextState = !isNaN(current) && current < 4 ? current + 1 : current;
+      setNewState(nextState);
+      setIpfsData(currentIpfsHash || '');
+    }
+  }, [show, currentState, currentIpfsHash]);
 
   const stateOptions = Object.entries(ProductState).map(([key, value]) => ({
     value,
     label: ProductStateLabels[value]
   }));
+
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -72,7 +97,11 @@ const UpdateStatusModal = ({ show, onHide, productId, currentState }) => {
               disabled={isLoading}
             >
               {stateOptions.map((option) => (
-                <option key={option.value} value={option.value}>
+                <option
+                  key={option.value}
+                  value={option.value}
+                  disabled={option.value <= currentState}
+                >
                   {option.label}
                 </option>
               ))}

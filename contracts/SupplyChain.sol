@@ -12,14 +12,13 @@ contract SupplyChain {
     }
     struct Product {
         uint256 id;
-        string name;
         address currentOwner;
-        string origin;
-        bool isAuthentic;
-        address[] ownershipHistory;
-        State state;
-        string ipfsHash;
         address orderedBy;
+        State state;
+        bool isAuthentic;
+        string name;
+        string origin;
+        string ipfsHash;
     }
 
     // Array to keep track of all IDs (Required for "View" functions)
@@ -31,6 +30,10 @@ contract SupplyChain {
     mapping(address => bool) public isVerifiedFarmer;
     mapping(address => bool) public isAuthorizedEntity;
 
+    // Optimized lookups
+    mapping(address => uint256[]) private _productsByOwner;
+    mapping(address => uint256[]) private _ordersByUser;
+
     event ProductRegistered(
         uint256 productId,
         string name,
@@ -41,7 +44,7 @@ contract SupplyChain {
         address indexed from,
         address indexed to
     );
-    event StatusUpdated(uint256 productId, State newState, string ipfsData);
+    event StatusUpdated(uint256 productId, State newState, string ipfsData, address actor);
 
     modifier onlyOwner() {
         require(
@@ -82,29 +85,26 @@ contract SupplyChain {
 
     function registerProduct(
         uint256 _id,
-        string memory _name,
-        string memory _origin,
-        string memory _ipfsHash
+        string calldata _name,
+        string calldata _origin,
+        string calldata _ipfsHash
     ) public onlyFarmer {
         require(products[_id].id == 0, "SC: Product ID already registered.");
 
-        address[] memory initialHistory = new address[](1);
-        initialHistory[0] = msg.sender;
-
         products[_id] = Product({
             id: _id,
-            name: _name,
             currentOwner: msg.sender,
-            origin: _origin,
-            isAuthentic: true,
-            ownershipHistory: initialHistory,
+            orderedBy: address(0),
             state: State.Created,
-            ipfsHash: _ipfsHash,
-            orderedBy: address(0)
+            isAuthentic: true,
+            name: _name,
+            origin: _origin,
+            ipfsHash: _ipfsHash
         });
 
         //Save ID to array so we can list it later
         allProductIds.push(_id);
+        _productsByOwner[msg.sender].push(_id);
 
         emit ProductRegistered(_id, _name, msg.sender);
     }
@@ -140,36 +140,45 @@ contract SupplyChain {
 
         products[_id].state = State.Ordered;
         products[_id].orderedBy = msg.sender;
+        _ordersByUser[msg.sender].push(_id);
+
+        emit StatusUpdated(_id, State.Ordered, "Ordered by Consumer", msg.sender);
     }
 
     function getMyOrders() public view returns (Product[] memory) {
-        uint256 count = 0;
-
-        for (uint256 i = 0; i < allProductIds.length; i++) {
-            Product memory p = products[allProductIds[i]];
-            bool isBuyer = (p.orderedBy == msg.sender);
-            bool isSellerWithOrder = (p.currentOwner == msg.sender &&
-                p.orderedBy != address(0));
-
-            if (isBuyer || isSellerWithOrder) {
-                count++;
-            }
+        uint256[] memory orderIds = _ordersByUser[msg.sender];
+        uint256 count = orderIds.length;
+        
+        // Also include products I'm selling that are ordered
+        // This is still O(N) on my products, but better than O(N) on all products
+        uint256[] memory myProductIds = _productsByOwner[msg.sender];
+        for(uint256 i = 0; i < myProductIds.length; i++) {
+             Product memory p = products[myProductIds[i]];
+             // Skip if I ordered it (already counted above)
+             if (p.currentOwner == msg.sender && p.orderedBy != address(0) && p.orderedBy != msg.sender) {
+                 count++;
+             }
         }
+
         Product[] memory result = new Product[](count);
         uint256 index = 0;
 
-        for (uint256 i = 0; i < allProductIds.length; i++) {
-            Product memory p = products[allProductIds[i]];
-
-            bool isBuyer = (p.orderedBy == msg.sender);
-            bool isSellerWithOrder = (p.currentOwner == msg.sender &&
-                p.orderedBy != address(0));
-
-            if (isBuyer || isSellerWithOrder) {
-                result[index] = p;
-                index++;
-            }
+        // Add my orders
+        for (uint256 i = 0; i < orderIds.length; i++) {
+            result[index] = products[orderIds[i]];
+            index++;
         }
+
+        // Add my sales
+        for (uint256 i = 0; i < myProductIds.length; i++) {
+             Product memory p = products[myProductIds[i]];
+             // Skip if I ordered it (already added above)
+             if (p.currentOwner == msg.sender && p.orderedBy != address(0) && p.orderedBy != msg.sender) {
+                 result[index] = p;
+                 index++;
+             }
+        }
+        
         return result;
     }
 
@@ -181,23 +190,31 @@ contract SupplyChain {
         require(products[_id].id != 0, "SC: Product does not exist.");
         address previousOwner = products[_id].currentOwner;
         products[_id].currentOwner = _newOwner;
-        products[_id].ownershipHistory.push(_newOwner);
+        
+        _productsByOwner[_newOwner].push(_id);
+        
         emit OwnershipTransferred(_id, previousOwner, _newOwner);
     }
 
     function updateStatus(
         uint256 _id,
-        State _newState,
-        string memory _ipfsData
-    ) public {
+        State _state,
+        string calldata _ipfsData
+    ) public onlyAuthorized {
+        require(products[_id].id != 0, "SC: Product not found.");
         require(
             products[_id].currentOwner == msg.sender,
-            "SC: Only current owner can update status."
+            "SC: You are not the owner."
+        );
+        require(
+            uint256(_state) > uint256(products[_id].state),
+            "SC: Status can only move forward."
         );
 
-        // Update the Status
-        products[_id].state = _newState;
-        emit StatusUpdated(_id, _newState, _ipfsData);
+        products[_id].state = _state;
+        products[_id].ipfsHash = _ipfsData;
+
+        emit StatusUpdated(_id, _state, _ipfsData, msg.sender);
     }
 
     function getProduct(
@@ -212,7 +229,8 @@ contract SupplyChain {
             string memory origin,
             bool isAuthentic,
             State state,
-            string memory ipfsHash
+            string memory ipfsHash,
+            address orderedBy
         )
     {
         Product memory p = products[_id];
@@ -223,7 +241,8 @@ contract SupplyChain {
             p.origin,
             p.isAuthentic,
             p.state,
-            p.ipfsHash
+            p.ipfsHash,
+            p.orderedBy
         );
     }
 
@@ -231,7 +250,9 @@ contract SupplyChain {
         uint256 _id
     ) public view returns (address[] memory) {
         require(products[_id].id != 0, "SC: Product not found.");
-        return products[_id].ownershipHistory;
+        // History is no longer stored on-chain. 
+        // Frontend should query 'OwnershipTransferred' events.
+        return new address[](0);
     }
 
     function verifyProduct(uint256 _id) public view returns (bool) {
@@ -245,11 +266,12 @@ contract SupplyChain {
      * @return Array of products owned by msg.sender
      */
     function getDistributorInventory() public view returns (Product[] memory) {
+        uint256[] memory myProductIds = _productsByOwner[msg.sender];
         uint256 count = 0;
 
         // Count products I currently own
-        for (uint256 i = 0; i < allProductIds.length; i++) {
-            if (products[allProductIds[i]].currentOwner == msg.sender) {
+        for (uint256 i = 0; i < myProductIds.length; i++) {
+            if (products[myProductIds[i]].currentOwner == msg.sender) {
                 count++;
             }
         }
@@ -257,9 +279,9 @@ contract SupplyChain {
         Product[] memory inventory = new Product[](count);
         uint256 index = 0;
 
-        for (uint256 i = 0; i < allProductIds.length; i++) {
-            if (products[allProductIds[i]].currentOwner == msg.sender) {
-                inventory[index] = products[allProductIds[i]];
+        for (uint256 i = 0; i < myProductIds.length; i++) {
+            if (products[myProductIds[i]].currentOwner == msg.sender) {
+                inventory[index] = products[myProductIds[i]];
                 index++;
             }
         }
@@ -272,10 +294,11 @@ contract SupplyChain {
      * @return Array of products in Stored state owned by msg.sender
      */
     function getDeliveryQueue() public view returns (Product[] memory) {
+        uint256[] memory myProductIds = _productsByOwner[msg.sender];
         uint256 count = 0;
 
-        for (uint256 i = 0; i < allProductIds.length; i++) {
-            Product memory p = products[allProductIds[i]];
+        for (uint256 i = 0; i < myProductIds.length; i++) {
+            Product memory p = products[myProductIds[i]];
             if (p.currentOwner == msg.sender && p.state == State.Stored) {
                 count++;
             }
@@ -284,8 +307,8 @@ contract SupplyChain {
         Product[] memory queue = new Product[](count);
         uint256 index = 0;
 
-        for (uint256 i = 0; i < allProductIds.length; i++) {
-            Product memory p = products[allProductIds[i]];
+        for (uint256 i = 0; i < myProductIds.length; i++) {
+            Product memory p = products[myProductIds[i]];
             if (p.currentOwner == msg.sender && p.state == State.Stored) {
                 queue[index] = p;
                 index++;
@@ -300,10 +323,11 @@ contract SupplyChain {
      * @return Array of products in InTransit state owned by msg.sender
      */
     function getReceivedProducts() public view returns (Product[] memory) {
+        uint256[] memory myProductIds = _productsByOwner[msg.sender];
         uint256 count = 0;
 
-        for (uint256 i = 0; i < allProductIds.length; i++) {
-            Product memory p = products[allProductIds[i]];
+        for (uint256 i = 0; i < myProductIds.length; i++) {
+            Product memory p = products[myProductIds[i]];
             if (p.currentOwner == msg.sender && p.state == State.InTransit) {
                 count++;
             }
@@ -312,8 +336,8 @@ contract SupplyChain {
         Product[] memory received = new Product[](count);
         uint256 index = 0;
 
-        for (uint256 i = 0; i < allProductIds.length; i++) {
-            Product memory p = products[allProductIds[i]];
+        for (uint256 i = 0; i < myProductIds.length; i++) {
+            Product memory p = products[myProductIds[i]];
             if (p.currentOwner == msg.sender && p.state == State.InTransit) {
                 received[index] = p;
                 index++;
@@ -328,40 +352,28 @@ contract SupplyChain {
      * @return Array of products in Delivered state that were owned by msg.sender
      */
     function getDeliveryHistory() public view returns (Product[] memory) {
+        // This function is tricky because we need to find products I *used* to own that are now Delivered.
+        // With _productsByOwner, we have a list of all products I ever touched.
+        
+        uint256[] memory myProductIds = _productsByOwner[msg.sender];
         uint256 count = 0;
 
-        for (uint256 i = 0; i < allProductIds.length; i++) {
-            Product memory p = products[allProductIds[i]];
-            // Check if product is delivered and I'm in the ownership history
-            if (p.state == State.Delivered) {
-                for (uint256 j = 0; j < p.ownershipHistory.length; j++) {
-                    if (
-                        p.ownershipHistory[j] == msg.sender &&
-                        p.currentOwner != msg.sender
-                    ) {
-                        count++;
-                        break;
-                    }
-                }
+        for (uint256 i = 0; i < myProductIds.length; i++) {
+            Product memory p = products[myProductIds[i]];
+            // Check if product is delivered and I am NOT the current owner (meaning I passed it on)
+            if (p.state == State.Delivered && p.currentOwner != msg.sender) {
+                 count++;
             }
         }
 
         Product[] memory history = new Product[](count);
         uint256 index = 0;
 
-        for (uint256 i = 0; i < allProductIds.length; i++) {
-            Product memory p = products[allProductIds[i]];
-            if (p.state == State.Delivered) {
-                for (uint256 j = 0; j < p.ownershipHistory.length; j++) {
-                    if (
-                        p.ownershipHistory[j] == msg.sender &&
-                        p.currentOwner != msg.sender
-                    ) {
-                        history[index] = p;
-                        index++;
-                        break;
-                    }
-                }
+        for (uint256 i = 0; i < myProductIds.length; i++) {
+            Product memory p = products[myProductIds[i]];
+             if (p.state == State.Delivered && p.currentOwner != msg.sender) {
+                history[index] = p;
+                index++;
             }
         }
 
