@@ -10,30 +10,13 @@ import './Products.css';
  */
 const Products = () => {
   const { isConnected } = useAuth();
-  const { isFarmer, getProduct, getDistributorInventory } = useContract();
+  const { isFarmer, getProduct, getProductHistory } = useContract();
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [searchId, setSearchId] = useState('');
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [productHistory, setProductHistory] = useState([]);
   const [searchError, setSearchError] = useState('');
-  const [ownedProducts, setOwnedProducts] = useState([]);
-  const [isLoadingOwned, setIsLoadingOwned] = useState(false);
-
-  const loadOwnedProducts = async () => {
-    setIsLoadingOwned(true);
-    const result = await getDistributorInventory();
-    if (result.success) {
-      setOwnedProducts(result.inventory);
-    }
-    setIsLoadingOwned(false);
-  };
-
-  React.useEffect(() => {
-    if (isConnected) {
-      loadOwnedProducts();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isConnected]);
 
   const handleSearch = async () => {
     if (!searchId) {
@@ -49,16 +32,20 @@ const Products = () => {
         setSearchError('Product not found');
       } else {
         setSelectedProduct(result.product);
+
+        // Fetch history
+        const historyResult = await getProductHistory(result.product.id);
+        if (historyResult.success) {
+          setProductHistory(historyResult.history);
+        } else {
+          setProductHistory([]);
+        }
+
         setShowDetailsModal(true);
       }
     } else {
       setSearchError(result.error);
     }
-  };
-
-  const handleProductClick = (product) => {
-    setSelectedProduct(product);
-    setShowDetailsModal(true);
   };
 
   if (!isConnected) {
@@ -114,54 +101,7 @@ const Products = () => {
       </div>
 
 
-      {/* Owned Products Section */}
-      <div className="mb-4">
-        <div className="d-flex justify-content-between align-items-center mb-3">
-          <h2>Owned Products</h2>
-          <button className="btn btn-outline-secondary btn-sm" onClick={loadOwnedProducts}>
-            <i className="bi bi-arrow-clockwise me-1"></i> Refresh
-          </button>
-        </div>
 
-        {isLoadingOwned ? (
-          <div className="text-center py-4">
-            <div className="spinner-border text-primary" role="status">
-              <span className="visually-hidden">Loading...</span>
-            </div>
-          </div>
-        ) : ownedProducts.length === 0 ? (
-          <div className="alert alert-light text-center border">
-            <p className="mb-0">You don't own any products yet.</p>
-          </div>
-        ) : (
-          <div className="row">
-            {ownedProducts.map((product) => (
-              <div key={product.id} className="col-md-6 col-lg-4 mb-4">
-                <div className="card h-100 shadow-sm product-card" onClick={() => handleProductClick(product)} style={{ cursor: 'pointer' }}>
-                  <div className="card-body">
-                    <h5 className="card-title text-primary">
-                      <i className="bi bi-box-seam me-2"></i>
-                      {product.name}
-                    </h5>
-                    <h6 className="card-subtitle mb-2 text-muted">ID: {product.id}</h6>
-                    <p className="card-text">
-                      <small className="text-muted">Origin: {product.origin}</small>
-                    </p>
-                    <div className="d-flex justify-content-between align-items-center">
-                      <span className="badge bg-info text-dark">
-                        Owned
-                      </span>
-                      <button className="btn btn-sm btn-outline-primary">
-                        View Details
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
 
       {/* Info Section */}
       <div className="row">
@@ -197,6 +137,7 @@ const Products = () => {
         show={showDetailsModal}
         onHide={() => setShowDetailsModal(false)}
         product={selectedProduct}
+        history={productHistory}
       />
     </div >
   );

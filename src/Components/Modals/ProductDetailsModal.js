@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
 import { Modal, Button, Badge } from 'react-bootstrap';
+import { useAuth } from '../../Services/Contexts/AuthContext';
+import { useContract } from '../../Services/Contexts/ContractContext';
 import TransferOwnershipModal from './TransferOwnershipModal';
 import UpdateStatusModal from './UpdateStatusModal';
 
 
-const ProductDetailsModal = ({ show, onHide, product }) => {
+const ProductDetailsModal = ({ show, onHide, product, history }) => {
+  const { account } = useAuth();
+  const { isFarmer, isDistributor } = useContract();
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [showUpdateStatusModal, setShowUpdateStatusModal] = useState(false);
 
@@ -87,26 +91,37 @@ const ProductDetailsModal = ({ show, onHide, product }) => {
 
           <div>
             <h5>Ownership History</h5>
-            {product.ownershipHistory && product.ownershipHistory.length > 0 ? (
+            {history && history.length > 0 ? (
               <div className="timeline">
-                {product.ownershipHistory.map((owner, index) => (
+                {history.map((event, index) => (
                   <div key={index} className="timeline-item mb-3">
                     <div className="d-flex align-items-center">
-                      <div className="timeline-marker bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style={{ width: '30px', height: '30px', minWidth: '30px' }}>
-                        {index + 1}
+                      <div className={`timeline-marker text-white rounded-circle d-flex align-items-center justify-content-center ${event.type === 'Registered' ? 'bg-success' :
+                        event.type === 'Transferred' ? 'bg-warning' : 'bg-primary'
+                        }`} style={{ width: '30px', height: '30px', minWidth: '30px' }}>
+                        <i className={`bi ${event.type === 'Registered' ? 'bi-star-fill' :
+                          event.type === 'Transferred' ? 'bi-arrow-right' : 'bi-arrow-repeat'
+                          } small`}></i>
                       </div>
                       <div className="ms-3 flex-grow-1">
-                        <p className="mb-0 text-break">{owner}</p>
-                        <small className="text-muted">
-                          {index === 0 ? 'Original Owner' : `Transfer ${index}`}
+                        <div className="d-flex justify-content-between">
+                          <strong>{event.type}</strong>
+                          <small className="text-muted">Block: {event.blockNumber}</small>
+                        </div>
+                        <p className="mb-1 small">{event.details}</p>
+                        <small className="text-muted d-block">
+                          Actor: <span className="font-monospace">{event.user}</span>
                         </small>
                       </div>
                     </div>
+                    {index < history.length - 1 && (
+                      <div className="timeline-line ms-3" style={{ borderLeft: '2px solid #dee2e6', height: '20px', marginLeft: '14px' }}></div>
+                    )}
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-muted">No ownership history available</p>
+              <p className="text-muted">No history available</p>
             )}
           </div>
         </Modal.Body>
@@ -114,14 +129,20 @@ const ProductDetailsModal = ({ show, onHide, product }) => {
           <Button variant="secondary" onClick={onHide}>
             Close
           </Button>
-          <Button variant="info" onClick={handleUpdateStatusClick}>
-            <i className="bi bi-arrow-repeat me-2"></i>
-            Update Status
-          </Button>
-          <Button variant="primary" onClick={handleTransferClick}>
-            <i className="bi bi-arrow-left-right me-2"></i>
-            Transfer Ownership
-          </Button>
+          {account && product.currentOwner &&
+            account.toLowerCase() === product.currentOwner.toLowerCase() &&
+            (isFarmer || isDistributor) && (
+              <>
+                <Button variant="info" onClick={handleUpdateStatusClick}>
+                  <i className="bi bi-arrow-repeat me-2"></i>
+                  Update Status
+                </Button>
+                <Button variant="primary" onClick={handleTransferClick}>
+                  <i className="bi bi-arrow-left-right me-2"></i>
+                  Transfer Ownership
+                </Button>
+              </>
+            )}
         </Modal.Footer>
       </Modal>
 
