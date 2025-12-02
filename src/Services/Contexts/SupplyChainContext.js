@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { initWeb3, onAccountChange, onNetworkChange, getWeb3 } from '../Utils/web3Utils';
+import SupplyChain from '../../Smart-Contract/SupplyChain.json';
 
 /**
  * Supply Chain Context
@@ -51,31 +52,8 @@ export const useSupplyChain = () => {
 };
 
 // Contract ABI (will be loaded from ContractContext)
-const CONTRACT_ABI = [
-  {"inputs":[],"stateMutability":"nonpayable","type":"constructor"},
-  {"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"productId","type":"uint256"},{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"}],"name":"OwnershipTransferred","type":"event"},
-  {"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"productId","type":"uint256"},{"indexed":false,"internalType":"string","name":"name","type":"string"},{"indexed":true,"internalType":"address","name":"farmer","type":"address"}],"name":"ProductRegistered","type":"event"},
-  {"inputs":[],"name":"contractOwner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function","constant":true},
-  {"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"isVerifiedFarmer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function","constant":true},
-  {"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"isAuthorizedEntity","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function","constant":true},
-  {"inputs":[{"internalType":"address","name":"_user","type":"address"}],"name":"setFarmerRole","outputs":[],"stateMutability":"nonpayable","type":"function"},
-  {"inputs":[{"internalType":"address","name":"_user","type":"address"}],"name":"setEntityRole","outputs":[],"stateMutability":"nonpayable","type":"function"},
-  {"inputs":[{"internalType":"uint256","name":"_id","type":"uint256"},{"internalType":"string","name":"_name","type":"string"},{"internalType":"string","name":"_origin","type":"string"},{"internalType":"string","name":"_ipfsHash","type":"string"}],"name":"registerProduct","outputs":[],"stateMutability":"nonpayable","type":"function"},
-  {"inputs":[{"internalType":"uint256","name":"_id","type":"uint256"},{"internalType":"address","name":"_newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},
-  {"inputs":[{"internalType":"uint256","name":"_id","type":"uint256"},{"internalType":"enum SupplyChain.State","name":"_state","type":"uint8"},{"internalType":"string","name":"_ipfsData","type":"string"}],"name":"updateStatus","outputs":[],"stateMutability":"nonpayable","type":"function"},
-  {"inputs":[{"internalType":"uint256","name":"_id","type":"uint256"}],"name":"getProduct","outputs":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"string","name":"name","type":"string"},{"internalType":"address","name":"currentOwner","type":"address"},{"internalType":"string","name":"origin","type":"string"},{"internalType":"bool","name":"isAuthentic","type":"bool"},{"internalType":"enum SupplyChain.State","name":"state","type":"uint8"},{"internalType":"string","name":"ipfsHash","type":"string"}],"stateMutability":"view","type":"function","constant":true},
-  {"inputs":[{"internalType":"uint256","name":"_id","type":"uint256"}],"name":"getProductHistory","outputs":[{"internalType":"address[]","name":"","type":"address[]"}],"stateMutability":"view","type":"function","constant":true},
-  {"inputs":[{"internalType":"uint256","name":"_id","type":"uint256"}],"name":"verifyProduct","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function","constant":true},
-  {"inputs":[],"name":"getAvailableProducts","outputs":[{"components":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"string","name":"name","type":"string"},{"internalType":"address","name":"currentOwner","type":"address"},{"internalType":"string","name":"origin","type":"string"},{"internalType":"bool","name":"isAuthentic","type":"bool"},{"internalType":"address[]","name":"ownershipHistory","type":"address[]"},{"internalType":"enum SupplyChain.State","name":"state","type":"uint8"},{"internalType":"string","name":"ipfsHash","type":"string"},{"internalType":"address","name":"orderedBy","type":"address"}],"internalType":"struct SupplyChain.Product[]","name":"","type":"tuple[]"}],"stateMutability":"view","type":"function","constant":true},
-  {"inputs":[{"internalType":"uint256","name":"_id","type":"uint256"}],"name":"placeOrder","outputs":[],"stateMutability":"nonpayable","type":"function"},
-  {"inputs":[],"name":"getMyOrders","outputs":[{"components":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"string","name":"name","type":"string"},{"internalType":"address","name":"currentOwner","type":"address"},{"internalType":"string","name":"origin","type":"string"},{"internalType":"bool","name":"isAuthentic","type":"bool"},{"internalType":"address[]","name":"ownershipHistory","type":"address[]"},{"internalType":"enum SupplyChain.State","name":"state","type":"uint8"},{"internalType":"string","name":"ipfsHash","type":"string"},{"internalType":"address","name":"orderedBy","type":"address"}],"internalType":"struct SupplyChain.Product[]","name":"","type":"tuple[]"}],"stateMutability":"view","type":"function","constant":true},
-  {"inputs":[],"name":"getDistributorInventory","outputs":[{"components":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"string","name":"name","type":"string"},{"internalType":"address","name":"currentOwner","type":"address"},{"internalType":"string","name":"origin","type":"string"},{"internalType":"bool","name":"isAuthentic","type":"bool"},{"internalType":"address[]","name":"ownershipHistory","type":"address[]"},{"internalType":"enum SupplyChain.State","name":"state","type":"uint8"},{"internalType":"string","name":"ipfsHash","type":"string"},{"internalType":"address","name":"orderedBy","type":"address"}],"internalType":"struct SupplyChain.Product[]","name":"","type":"tuple[]"}],"stateMutability":"view","type":"function","constant":true},
-  {"inputs":[],"name":"getDeliveryQueue","outputs":[{"components":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"string","name":"name","type":"string"},{"internalType":"address","name":"currentOwner","type":"address"},{"internalType":"string","name":"origin","type":"string"},{"internalType":"bool","name":"isAuthentic","type":"bool"},{"internalType":"address[]","name":"ownershipHistory","type":"address[]"},{"internalType":"enum SupplyChain.State","name":"state","type":"uint8"},{"internalType":"string","name":"ipfsHash","type":"string"},{"internalType":"address","name":"orderedBy","type":"address"}],"internalType":"struct SupplyChain.Product[]","name":"","type":"tuple[]"}],"stateMutability":"view","type":"function","constant":true},
-  {"inputs":[],"name":"getReceivedProducts","outputs":[{"components":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"string","name":"name","type":"string"},{"internalType":"address","name":"currentOwner","type":"address"},{"internalType":"string","name":"origin","type":"string"},{"internalType":"bool","name":"isAuthentic","type":"bool"},{"internalType":"address[]","name":"ownershipHistory","type":"address[]"},{"internalType":"enum SupplyChain.State","name":"state","type":"uint8"},{"internalType":"string","name":"ipfsHash","type":"string"},{"internalType":"address","name":"orderedBy","type":"address"}],"internalType":"struct SupplyChain.Product[]","name":"","type":"tuple[]"}],"stateMutability":"view","type":"function","constant":true},
-  {"inputs":[],"name":"getDeliveryHistory","outputs":[{"components":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"string","name":"name","type":"string"},{"internalType":"address","name":"currentOwner","type":"address"},{"internalType":"string","name":"origin","type":"string"},{"internalType":"bool","name":"isAuthentic","type":"bool"},{"internalType":"address[]","name":"ownershipHistory","type":"address[]"},{"internalType":"enum SupplyChain.State","name":"state","type":"uint8"},{"internalType":"string","name":"ipfsHash","type":"string"},{"internalType":"address","name":"orderedBy","type":"address"}],"internalType":"struct SupplyChain.Product[]","name":"","type":"tuple[]"}],"stateMutability":"view","type":"function","constant":true}
-];
-
-const CONTRACT_ADDRESS = '0x3ba7fe9160D7465e8d8B716Dc2941535AaCcF926';
+// const CONTRACT_ABI = ... (Removed)
+// const CONTRACT_ADDRESS = ... (Removed)
 
 export const SupplyChainProvider = ({ children }) => {
   // Connection state
@@ -83,14 +61,14 @@ export const SupplyChainProvider = ({ children }) => {
   const [web3, setWeb3] = useState(null);
   const [networkId, setNetworkId] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
-  
+
   // Contract state
   const [contract, setContract] = useState(null);
   const [contractOwner, setContractOwner] = useState(null);
-  
+
   // Role state (single role per user)
   const [role, setRole] = useState(Role.CONSUMER); // Default to consumer
-  
+
   // Loading/Error state
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -130,7 +108,15 @@ export const SupplyChainProvider = ({ children }) => {
       localStorage.setItem('walletConnected', 'true');
 
       // Initialize contract
-      const contractInstance = new web3Instance.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+      const deployedNetwork = SupplyChain.networks[netId];
+      if (!deployedNetwork) {
+        throw new Error('Contract not deployed to detected network');
+      }
+
+      const contractInstance = new web3Instance.eth.Contract(
+        SupplyChain.abi,
+        deployedNetwork.address
+      );
       setContract(contractInstance);
 
       // Get contract owner and determine role
@@ -200,7 +186,70 @@ export const SupplyChainProvider = ({ children }) => {
     },
     getProductHistory: async (productId) => {
       if (!contract) throw new Error('Contract not initialized');
-      return await contract.methods.getProductHistory(productId).call();
+
+      try {
+        // Get registration event (first owner)
+        const registrationEvents = await contract.getPastEvents('ProductRegistered', {
+          filter: { productId: productId },
+          fromBlock: 0,
+          toBlock: 'latest'
+        });
+
+        // Get transfer events (subsequent owners)
+        const transferEvents = await contract.getPastEvents('OwnershipTransferred', {
+          filter: { productId: productId },
+          fromBlock: 0,
+          toBlock: 'latest'
+        });
+
+        // Get status update events
+        const statusEvents = await contract.getPastEvents('StatusUpdated', {
+          filter: { productId: productId },
+          fromBlock: 0,
+          toBlock: 'latest'
+        });
+
+        let history = [];
+
+        // Process Registration
+        registrationEvents.forEach(event => {
+          history.push({
+            type: 'Registered',
+            user: event.returnValues.farmer,
+            blockNumber: event.blockNumber,
+            details: 'Product Created'
+          });
+        });
+
+        // Process Transfers
+        transferEvents.forEach(event => {
+          history.push({
+            type: 'Transferred',
+            user: event.returnValues.to,
+            blockNumber: event.blockNumber,
+            details: `Transferred from ${event.returnValues.from}`
+          });
+        });
+
+        // Process Status Updates
+        const statusLabels = ['Created', 'Ordered', 'In Transit', 'Stored', 'Delivered'];
+        statusEvents.forEach(event => {
+          history.push({
+            type: 'StatusUpdated',
+            user: event.returnValues.actor || 'Unknown',
+            blockNumber: event.blockNumber,
+            details: `Status updated to ${statusLabels[event.returnValues.newState]}`
+          });
+        });
+
+        // Sort by block number
+        history.sort((a, b) => a.blockNumber - b.blockNumber);
+
+        return history;
+      } catch (error) {
+        console.error('Error getting product history:', error);
+        return [];
+      }
     },
     verifyProduct: async (productId) => {
       if (!contract) throw new Error('Contract not initialized');
@@ -324,10 +373,19 @@ export const SupplyChainProvider = ({ children }) => {
     },
     // Get my orders (products I ordered)
     getMyOrders: async () => {
-      if (!contract) throw new Error('Contract not initialized');
-      const orders = await contract.methods.getMyOrders().call({ from: account });
-      // Filter to only show products where I am the orderedBy
-      return orders.filter(p => p.orderedBy.toLowerCase() === account.toLowerCase());
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        if (!contract) throw new Error('Contract not initialized');
+        const orders = await contract.methods.getMyOrders().call({ from: account });
+        setIsLoading(false);
+        return { success: true, orders };
+      } catch (err) {
+        setError(err.message);
+        setIsLoading(false);
+        return { success: false, error: err.message };
+      }
     }
   };
 

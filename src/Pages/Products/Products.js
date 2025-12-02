@@ -29,12 +29,8 @@ const Products = () => {
         setSearchError('Product not found');
       } else {
         setSelectedProduct(product);
-        const historyResult = await getProductHistory(product.id);
-        if (historyResult.success) {
-          setProductHistory(historyResult.history);
-        } else {
-          setProductHistory([]);
-        }
+        const history = await getProductHistory(product.id);
+        setProductHistory(history);
         setShowDetailsModal(true);
       }
     } catch (err) {

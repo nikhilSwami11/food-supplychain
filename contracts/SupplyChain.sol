@@ -35,16 +35,16 @@ contract SupplyChain {
     mapping(address => uint256[]) private _ordersByUser;
 
     event ProductRegistered(
-        uint256 productId,
+        uint256 indexed productId,
         string name,
         address indexed farmer
     );
     event OwnershipTransferred(
-        uint256 productId,
+        uint256 indexed productId,
         address indexed from,
         address indexed to
     );
-    event StatusUpdated(uint256 productId, State newState, string ipfsData, address actor);
+    event StatusUpdated(uint256 indexed productId, State newState, string ipfsData, address actor);
 
     modifier onlyOwner() {
         require(
@@ -148,35 +148,11 @@ contract SupplyChain {
     function getMyOrders() public view returns (Product[] memory) {
         uint256[] memory orderIds = _ordersByUser[msg.sender];
         uint256 count = orderIds.length;
-        
-        // Also include products I'm selling that are ordered
-        // This is still O(N) on my products, but better than O(N) on all products
-        uint256[] memory myProductIds = _productsByOwner[msg.sender];
-        for(uint256 i = 0; i < myProductIds.length; i++) {
-             Product memory p = products[myProductIds[i]];
-             // Skip if I ordered it (already counted above)
-             if (p.currentOwner == msg.sender && p.orderedBy != address(0) && p.orderedBy != msg.sender) {
-                 count++;
-             }
-        }
 
         Product[] memory result = new Product[](count);
-        uint256 index = 0;
-
-        // Add my orders
-        for (uint256 i = 0; i < orderIds.length; i++) {
-            result[index] = products[orderIds[i]];
-            index++;
-        }
-
-        // Add my sales
-        for (uint256 i = 0; i < myProductIds.length; i++) {
-             Product memory p = products[myProductIds[i]];
-             // Skip if I ordered it (already added above)
-             if (p.currentOwner == msg.sender && p.orderedBy != address(0) && p.orderedBy != msg.sender) {
-                 result[index] = p;
-                 index++;
-             }
+        
+        for (uint256 i = 0; i < count; i++) {
+            result[i] = products[orderIds[i]];
         }
         
         return result;

@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useSupplyChain, ProductStateLabels } from '../../Services/Contexts/SupplyChainContext';
-import TransferOwnershipModal from '../../Components/Modals/TransferOwnershipModal';
-import UpdateStatusModal from '../../Components/Modals/UpdateStatusModal';
 import './Consumer.css';
 
 /**
@@ -9,13 +7,11 @@ import './Consumer.css';
  * Shows all products ordered by the current user
  */
 const MyOrders = () => {
-  const { isConnected, consumer, common, isFarmer, account, getMyOrders, getProductHistory } = useSupplyChain();
+  const { isConnected, consumer, common } = useSupplyChain();
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
-  const [showTransferModal, setShowTransferModal] = useState(false);
-  const [showUpdateStatusModal, setShowUpdateStatusModal] = useState(false);
   const [history, setHistory] = useState([]);
 
   const loadOrders = async () => {
@@ -39,25 +35,9 @@ const MyOrders = () => {
 
   const handleViewHistory = async (product) => {
     setSelectedProduct(product);
-      const productHistory = await common.getProductHistory(product.id);
-      setHistory(productHistory);
-      setShowHistoryModal(true);
-  };
-
-  const handleTransfer = (product) => {
-    setSelectedProduct(product);
-    setShowTransferModal(true);
-  };
-
-  const handleUpdateStatus = (product) => {
-    setSelectedProduct(product);
-    setShowUpdateStatusModal(true);
-  };
-
-  const handleModalClose = () => {
-    setShowTransferModal(false);
-    setShowUpdateStatusModal(false);
-    loadOrders(); // Refresh list after action
+    const productHistory = await common.getProductHistory(product.id);
+    setHistory(productHistory);
+    setShowHistoryModal(true);
   };
 
   const getStateLabel = (state) => {
@@ -99,7 +79,7 @@ const MyOrders = () => {
   return (
     <div className="container">
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h1>{isFarmer ? 'Orders' : 'My Orders'}</h1>
+        <h1>My Orders</h1>
         <button className="btn btn-outline-primary" onClick={loadOrders}>
           <i className="bi bi-arrow-clockwise me-2"></i>
           Refresh
@@ -166,24 +146,6 @@ const MyOrders = () => {
                       <i className="bi bi-clock-history me-2"></i>
                       View History
                     </button>
-                    {isFarmer && order.currentOwner.toLowerCase() === account.toLowerCase() && (
-                      <>
-                        <button
-                          className="btn btn-outline-success"
-                          onClick={() => handleUpdateStatus(order)}
-                        >
-                          <i className="bi bi-pencil-square me-2"></i>
-                          Update Status
-                        </button>
-                        <button
-                          className="btn btn-outline-warning"
-                          onClick={() => handleTransfer(order)}
-                        >
-                          <i className="bi bi-arrow-right-circle me-2"></i>
-                          Transfer Ownership
-                        </button>
-                      </>
-                    )}
                   </div>
                 </div>
               </div>
@@ -255,19 +217,6 @@ const MyOrders = () => {
         </div>
       )}
 
-      <TransferOwnershipModal
-        show={showTransferModal}
-        onHide={handleModalClose}
-        productId={selectedProduct?.id}
-      />
-
-      <UpdateStatusModal
-        show={showUpdateStatusModal}
-        onHide={handleModalClose}
-        productId={selectedProduct?.id}
-        currentState={selectedProduct?.state}
-        currentIpfsHash={selectedProduct?.ipfsHash}
-      />
     </div>
   );
 };
