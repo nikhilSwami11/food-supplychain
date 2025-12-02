@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../Services/Contexts/AuthContext';
-import { useContract } from '../../Services/Contexts/ContractContext';
+import { useSupplyChain } from '../../Services/Contexts/SupplyChainContext';
 import './Distributor.css';
 
 /**
@@ -8,8 +7,7 @@ import './Distributor.css';
  * Shows products in InTransit state that need to be marked as stored
  */
 const ReceivedProducts = () => {
-  const { isConnected } = useAuth();
-  const { isDistributor, getReceivedProducts, updateStatus } = useContract();
+  const { isConnected, isDistributor, distributor } = useSupplyChain();
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState({});
@@ -17,9 +15,11 @@ const ReceivedProducts = () => {
 
   const loadProducts = async () => {
     setIsLoading(true);
-    const result = await getReceivedProducts();
-    if (result.success) {
-      setProducts(result.received);
+    try {
+      const received = await distributor.getReceivedProducts();
+      setProducts(received);
+    } catch (err) {
+      console.error('Error loading received products:', err);
     }
     setIsLoading(false);
   };
@@ -35,13 +35,12 @@ const ReceivedProducts = () => {
     setActionLoading({ ...actionLoading, [productId]: true });
     setMessage({ type: '', text: '' });
 
-    const result = await updateStatus(productId, 3, 'Product received and stored in warehouse');
-    
-    if (result.success) {
+    try {
+      await distributor.markAsStored(productId);
       setMessage({ type: 'success', text: 'Product marked as stored successfully!' });
       await loadProducts();
-    } else {
-      setMessage({ type: 'danger', text: result.error });
+    } catch (err) {
+      setMessage({ type: 'danger', text: err.message });
     }
 
     setActionLoading({ ...actionLoading, [productId]: false });

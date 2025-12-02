@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../Services/Contexts/AuthContext';
-import { useContract } from '../../Services/Contexts/ContractContext';
+import { useSupplyChain, ProductStateLabels } from '../../Services/Contexts/SupplyChainContext';
 import './Consumer.css';
 
 /**
@@ -8,8 +7,7 @@ import './Consumer.css';
  * Shows all products ordered by the current user
  */
 const MyOrders = () => {
-  const { isConnected } = useAuth();
-  const { getMyOrders, getProductHistory } = useContract();
+  const { isConnected, consumer, common } = useSupplyChain();
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -18,9 +16,11 @@ const MyOrders = () => {
 
   const loadOrders = async () => {
     setIsLoading(true);
-    const result = await getMyOrders();
-    if (result.success) {
-      setOrders(result.orders);
+    try {
+      const myOrders = await consumer.getMyOrders();
+      setOrders(myOrders);
+    } catch (err) {
+      console.error('Error loading orders:', err);
     }
     setIsLoading(false);
   };
@@ -34,16 +34,17 @@ const MyOrders = () => {
 
   const handleViewHistory = async (product) => {
     setSelectedProduct(product);
-    const result = await getProductHistory(product.id);
-    if (result.success) {
-      setHistory(result.history);
+    try {
+      const productHistory = await common.getProductHistory(product.id);
+      setHistory(productHistory);
       setShowHistoryModal(true);
+    } catch (err) {
+      console.error('Error loading history:', err);
     }
   };
 
   const getStateLabel = (state) => {
-    const states = ['Created', 'Ordered', 'InTransit', 'Stored', 'Delivered'];
-    return states[state] || 'Unknown';
+    return ProductStateLabels[parseInt(state)] || 'Unknown';
   };
 
   const getStateBadgeClass = (state) => {

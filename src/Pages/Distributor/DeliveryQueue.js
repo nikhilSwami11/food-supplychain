@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../Services/Contexts/AuthContext';
-import { useContract } from '../../Services/Contexts/ContractContext';
+import { useSupplyChain } from '../../Services/Contexts/SupplyChainContext';
 import './Distributor.css';
 
 /**
@@ -8,8 +7,7 @@ import './Distributor.css';
  * Shows products in Stored state ready to be delivered to consumers
  */
 const DeliveryQueue = () => {
-  const { isConnected } = useAuth();
-  const { isDistributor, getDeliveryQueue, updateStatus } = useContract();
+  const { isConnected, isDistributor, distributor } = useSupplyChain();
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState({});
@@ -17,9 +15,11 @@ const DeliveryQueue = () => {
 
   const loadProducts = async () => {
     setIsLoading(true);
-    const result = await getDeliveryQueue();
-    if (result.success) {
-      setProducts(result.queue);
+    try {
+      const queue = await distributor.getDeliveryQueue();
+      setProducts(queue);
+    } catch (err) {
+      console.error('Error loading delivery queue:', err);
     }
     setIsLoading(false);
   };
@@ -31,21 +31,25 @@ const DeliveryQueue = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isConnected, isDistributor]);
 
-  const handleDeliver = async (productId) => {
-    if (!window.confirm('Are you sure you want to mark this product as delivered? This will transfer ownership to the consumer.')) {
+  const handleDeliver = async (productId, consumerAddress) => {
+    if (!consumerAddress || consumerAddress === '0x0000000000000000000000000000000000000000') {
+      setMessage({ type: 'danger', text: 'No consumer address found for this product' });
+      return;
+    }
+
+    if (!window.confirm('Are you sure you want to deliver this product? This will transfer ownership to the consumer.')) {
       return;
     }
 
     setActionLoading({ ...actionLoading, [productId]: true });
     setMessage({ type: '', text: '' });
 
-    const result = await updateStatus(productId, 4, 'Product delivered to consumer');
-    
-    if (result.success) {
+    try {
+      await distributor.deliverToConsumer(productId, consumerAddress);
       setMessage({ type: 'success', text: 'Product delivered successfully! Ownership transferred to consumer.' });
       await loadProducts();
-    } else {
-      setMessage({ type: 'danger', text: result.error });
+    } catch (err) {
+      setMessage({ type: 'danger', text: err.message });
     }
 
     setActionLoading({ ...actionLoading, [productId]: false });
@@ -145,7 +149,7 @@ const DeliveryQueue = () => {
               <div className="product-actions">
                 <button
                   className="btn btn-success"
-                  onClick={() => handleDeliver(product.id)}
+                  onClick={() => handleDeliver(product.id, product.orderedBy)}
                   disabled={actionLoading[product.id] || product.orderedBy === '0x0000000000000000000000000000000000000000'}
                 >
                   {actionLoading[product.id] ? (

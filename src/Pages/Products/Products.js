@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { useAuth } from '../../Services/Contexts/AuthContext';
-import { useContract } from '../../Services/Contexts/ContractContext';
+import { useSupplyChain } from '../../Services/Contexts/SupplyChainContext';
 import RegisterProductModal from '../../Components/Modals/RegisterProductModal';
 import ProductDetailsModal from '../../Components/Modals/ProductDetailsModal';
 import './Products.css';
@@ -9,8 +8,7 @@ import './Products.css';
  * Products Page
  */
 const Products = () => {
-  const { isConnected } = useAuth();
-  const { isFarmer, getProduct } = useContract();
+  const { isConnected, isFarmer, common } = useSupplyChain();
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [searchId, setSearchId] = useState('');
@@ -24,17 +22,16 @@ const Products = () => {
     }
 
     setSearchError('');
-    const result = await getProduct(parseInt(searchId));
-    
-    if (result.success) {
-      if (result.product.id === '0') {
+    try {
+      const product = await common.getProduct(parseInt(searchId));
+      if (product.id === '0') {
         setSearchError('Product not found');
       } else {
-        setSelectedProduct(result.product);
+        setSelectedProduct(product);
         setShowDetailsModal(true);
       }
-    } else {
-      setSearchError(result.error);
+    } catch (err) {
+      setSearchError(err.message);
     }
   };
 

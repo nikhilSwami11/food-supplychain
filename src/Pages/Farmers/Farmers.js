@@ -1,12 +1,12 @@
 import React from 'react';
-import { useAuth } from '../../Services/Contexts/AuthContext';
+import { useSupplyChain } from '../../Services/Contexts/SupplyChainContext';
 import './Farmers.css';
 
 /**
  * Farmers Page
  */
 const Farmers = () => {
-  const { isConnected } = useAuth();
+  const { isConnected } = useSupplyChain();
 
   if (!isConnected) {
     return (

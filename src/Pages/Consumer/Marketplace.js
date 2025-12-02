@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../Services/Contexts/AuthContext';
-import { useContract } from '../../Services/Contexts/ContractContext';
+import { useSupplyChain, ProductStateLabels } from '../../Services/Contexts/SupplyChainContext';
 import './Consumer.css';
 
 /**
@@ -8,8 +7,7 @@ import './Consumer.css';
  * Shows all available products (in Created state) that consumers can order
  */
 const Marketplace = () => {
-  const { isConnected } = useAuth();
-  const { getAvailableProducts, placeOrder } = useContract();
+  const { isConnected, consumer } = useSupplyChain();
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState({});
@@ -17,9 +15,11 @@ const Marketplace = () => {
 
   const loadProducts = async () => {
     setIsLoading(true);
-    const result = await getAvailableProducts();
-    if (result.success) {
-      setProducts(result.products);
+    try {
+      const available = await consumer.getAvailableProducts();
+      setProducts(available);
+    } catch (err) {
+      console.error('Error loading products:', err);
     }
     setIsLoading(false);
   };
@@ -39,13 +39,12 @@ const Marketplace = () => {
     setActionLoading({ ...actionLoading, [productId]: true });
     setMessage({ type: '', text: '' });
 
-    const result = await placeOrder(productId);
-    
-    if (result.success) {
+    try {
+      await consumer.placeOrder(productId);
       setMessage({ type: 'success', text: 'Order placed successfully! Check "My Orders" to track it.' });
       await loadProducts();
-    } else {
-      setMessage({ type: 'danger', text: result.error });
+    } catch (err) {
+      setMessage({ type: 'danger', text: err.message });
     }
 
     setActionLoading({ ...actionLoading, [productId]: false });
@@ -53,8 +52,7 @@ const Marketplace = () => {
   };
 
   const getStateLabel = (state) => {
-    const states = ['Created', 'Ordered', 'InTransit', 'Stored', 'Delivered'];
-    return states[state] || 'Unknown';
+    return ProductStateLabels[parseInt(state)] || 'Unknown';
   };
 
   if (!isConnected) {

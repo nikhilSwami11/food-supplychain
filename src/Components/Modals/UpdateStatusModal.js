@@ -1,22 +1,19 @@
 import React, { useState } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
-import { useContract } from '../../Services/Contexts/ContractContext';
+import { useSupplyChain, ProductState, ProductStateLabels } from '../../Services/Contexts/SupplyChainContext';
 
 
 const UpdateStatusModal = ({ show, onHide, productId, currentState }) => {
-  const { updateStatus } = useContract();
+  const { contract, account } = useSupplyChain();
   const [newState, setNewState] = useState(currentState || 0);
   const [ipfsData, setIpfsData] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
 
-  const stateOptions = [
-    { value: 0, label: 'Created' },
-    { value: 1, label: 'Ordered' },
-    { value: 2, label: 'In Transit' },
-    { value: 3, label: 'Stored' },
-    { value: 4, label: 'Delivered' }
-  ];
+  const stateOptions = Object.entries(ProductState).map(([key, value]) => ({
+    value,
+    label: ProductStateLabels[value]
+  }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,17 +26,16 @@ const UpdateStatusModal = ({ show, onHide, productId, currentState }) => {
     setIsLoading(true);
     setMessage({ type: '', text: '' });
 
-    const result = await updateStatus(parseInt(productId), parseInt(newState), ipfsData);
-
-    if (result.success) {
+    try {
+      await contract.methods.updateStatus(parseInt(productId), parseInt(newState), ipfsData).send({ from: account });
       setMessage({ type: 'success', text: 'Status updated successfully!' });
       setIpfsData('');
       setTimeout(() => {
         onHide();
         setMessage({ type: '', text: '' });
       }, 2000);
-    } else {
-      setMessage({ type: 'danger', text: result.error });
+    } catch (err) {
+      setMessage({ type: 'danger', text: err.message });
     }
 
     setIsLoading(false);

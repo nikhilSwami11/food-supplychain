@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../Services/Contexts/AuthContext';
-import { useContract } from '../../Services/Contexts/ContractContext';
+import { useSupplyChain } from '../../Services/Contexts/SupplyChainContext';
 import { Link } from 'react-router-dom';
 import './Distributor.css';
 
@@ -9,8 +8,7 @@ import './Distributor.css';
  * Shows overview of distributor's inventory and operations
  */
 const Distributor = () => {
-  const { account, isConnected } = useAuth();
-  const { isDistributor, getDistributorInventory, getDeliveryQueue, getReceivedProducts, getDeliveryHistory } = useContract();
+  const { account, isConnected, isDistributor, distributor } = useSupplyChain();
   const [stats, setStats] = useState({
     totalInventory: 0,
     inTransit: 0,
@@ -24,18 +22,18 @@ const Distributor = () => {
       if (isConnected && isDistributor) {
         setIsLoading(true);
         try {
-          const [inventoryResult, queueResult, receivedResult, historyResult] = await Promise.all([
-            getDistributorInventory(),
-            getDeliveryQueue(),
-            getReceivedProducts(),
-            getDeliveryHistory()
+          const [inventory, queue, received, history] = await Promise.all([
+            distributor.getInventory(),
+            distributor.getDeliveryQueue(),
+            distributor.getReceivedProducts(),
+            distributor.getDeliveryHistory()
           ]);
 
           setStats({
-            totalInventory: inventoryResult.success ? inventoryResult.inventory.length : 0,
-            inTransit: receivedResult.success ? receivedResult.received.length : 0,
-            stored: queueResult.success ? queueResult.queue.length : 0,
-            delivered: historyResult.success ? historyResult.history.length : 0
+            totalInventory: inventory.length,
+            inTransit: received.length,
+            stored: queue.length,
+            delivered: history.length
           });
         } catch (error) {
           console.error('Error loading stats:', error);
@@ -45,7 +43,7 @@ const Distributor = () => {
     };
 
     loadStats();
-  }, [isConnected, isDistributor, getDistributorInventory, getDeliveryQueue, getReceivedProducts, getDeliveryHistory]);
+  }, [isConnected, isDistributor, distributor]);
 
   if (!isConnected) {
     return (

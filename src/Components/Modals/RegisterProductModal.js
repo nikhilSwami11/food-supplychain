@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
-import { useContract } from '../../Services/Contexts/ContractContext';
+import { useSupplyChain } from '../../Services/Contexts/SupplyChainContext';
 
 
 const RegisterProductModal = ({ show, onHide }) => {
-  const { registerProduct } = useContract();
+  const { farmer } = useSupplyChain();
   const [formData, setFormData] = useState({
     productId: '',
     productName: '',
@@ -32,22 +32,21 @@ const RegisterProductModal = ({ show, onHide }) => {
     setIsLoading(true);
     setMessage({ type: '', text: '' });
 
-    const result = await registerProduct(
-      parseInt(formData.productId),
-      formData.productName,
-      formData.origin,
-      formData.ipfsHash
-    );
-
-    if (result.success) {
+    try {
+      await farmer.registerProduct(
+        parseInt(formData.productId),
+        formData.productName,
+        formData.origin,
+        formData.ipfsHash
+      );
       setMessage({ type: 'success', text: 'Product registered successfully!' });
       setFormData({ productId: '', productName: '', origin: '', ipfsHash: '' });
       setTimeout(() => {
         onHide();
         setMessage({ type: '', text: '' });
       }, 2000);
-    } else {
-      setMessage({ type: 'danger', text: result.error });
+    } catch (err) {
+      setMessage({ type: 'danger', text: err.message });
     }
 
     setIsLoading(false);

@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
-import { useAuth } from '../../Services/Contexts/AuthContext';
-import { useContract } from '../../Services/Contexts/ContractContext';
+import { useSupplyChain } from '../../Services/Contexts/SupplyChainContext';
 import './Admin.css';
 
 /**
- * Verify farmers 
+ * Verify farmers
  */
 const Admin = () => {
-  const { isConnected } = useAuth();
-  const { isAdmin, setFarmerRole, setEntityRole } = useContract();
+  const { isConnected, isAdmin, admin } = useSupplyChain();
   const [farmerAddress, setFarmerAddress] = useState('');
   const [distributorAddress, setDistributorAddress] = useState('');
   const [farmerMessage, setFarmerMessage] = useState({ type: '', text: '' });
@@ -27,13 +25,12 @@ const Admin = () => {
     setIsFarmerLoading(true);
     setFarmerMessage({ type: '', text: '' });
 
-    const result = await setFarmerRole(farmerAddress);
-
-    if (result.success) {
+    try {
+      await admin.verifyFarmer(farmerAddress);
       setFarmerMessage({ type: 'success', text: 'Farmer verified successfully!' });
       setFarmerAddress('');
-    } else {
-      setFarmerMessage({ type: 'danger', text: result.error });
+    } catch (err) {
+      setFarmerMessage({ type: 'danger', text: err.message });
     }
 
     setIsFarmerLoading(false);
@@ -50,13 +47,12 @@ const Admin = () => {
     setIsDistributorLoading(true);
     setDistributorMessage({ type: '', text: '' });
 
-    const result = await setEntityRole(distributorAddress);
-
-    if (result.success) {
+    try {
+      await admin.authorizeDistributor(distributorAddress);
       setDistributorMessage({ type: 'success', text: 'Distributor authorized successfully!' });
       setDistributorAddress('');
-    } else {
-      setDistributorMessage({ type: 'danger', text: result.error });
+    } catch (err) {
+      setDistributorMessage({ type: 'danger', text: err.message });
     }
 
     setIsDistributorLoading(false);

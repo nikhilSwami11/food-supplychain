@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
-import { useContract } from '../../Services/Contexts/ContractContext';
+import { useSupplyChain } from '../../Services/Contexts/SupplyChainContext';
 
 
 const TransferOwnershipModal = ({ show, onHide, productId }) => {
-  const { transferOwnership } = useContract();
+  const { contract, account } = useSupplyChain();
   const [newOwner, setNewOwner] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!newOwner) {
       setMessage({ type: 'danger', text: 'Please enter new owner address' });
       return;
@@ -20,17 +20,16 @@ const TransferOwnershipModal = ({ show, onHide, productId }) => {
     setIsLoading(true);
     setMessage({ type: '', text: '' });
 
-    const result = await transferOwnership(parseInt(productId), newOwner);
-
-    if (result.success) {
+    try {
+      await contract.methods.transferOwnership(parseInt(productId), newOwner).send({ from: account });
       setMessage({ type: 'success', text: 'Ownership transferred successfully!' });
       setNewOwner('');
       setTimeout(() => {
         onHide();
         setMessage({ type: '', text: '' });
       }, 2000);
-    } else {
-      setMessage({ type: 'danger', text: result.error });
+    } catch (err) {
+      setMessage({ type: 'danger', text: err.message });
     }
 
     setIsLoading(false);

@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../../Services/Contexts/AuthContext';
-import { useContract } from '../../Services/Contexts/ContractContext';
+import { useSupplyChain } from '../../Services/Contexts/SupplyChainContext';
 import './Navbar.css';
 
 
 const Navbar = () => {
-  const { account, isConnected, connectWallet, disconnectWallet, error } = useAuth();
-  const { isAdmin, isFarmer, isDistributor } = useContract();
+  const { account, isConnected, connectWallet, disconnectWallet, error, isAdmin, isFarmer, isDistributor } = useSupplyChain();
   const [showError, setShowError] = useState(false);
 
   const handleConnect = async () => {
@@ -84,6 +82,13 @@ const Navbar = () => {
                 My Orders
               </Link>
             </li>
+            {isFarmer && (
+              <li className="nav-item">
+                <Link className="nav-link" to="/farmer/orders">
+                  Farmer Orders
+                </Link>
+              </li>
+            )}
             {isDistributor && (
               <li className="nav-item">
                 <Link className="nav-link" to="/distributor">

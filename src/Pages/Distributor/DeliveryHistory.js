@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../Services/Contexts/AuthContext';
-import { useContract } from '../../Services/Contexts/ContractContext';
+import { useSupplyChain } from '../../Services/Contexts/SupplyChainContext';
 import './Distributor.css';
 
 /**
@@ -8,16 +7,17 @@ import './Distributor.css';
  * Shows products that have been delivered by the distributor
  */
 const DeliveryHistory = () => {
-  const { isConnected } = useAuth();
-  const { isDistributor, getDeliveryHistory } = useContract();
+  const { isConnected, isDistributor, distributor } = useSupplyChain();
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const loadHistory = async () => {
     setIsLoading(true);
-    const result = await getDeliveryHistory();
-    if (result.success) {
-      setProducts(result.history);
+    try {
+      const history = await distributor.getDeliveryHistory();
+      setProducts(history);
+    } catch (err) {
+      console.error('Error loading delivery history:', err);
     }
     setIsLoading(false);
   };

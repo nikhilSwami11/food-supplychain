@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../Services/Contexts/AuthContext';
-import { useContract } from '../../Services/Contexts/ContractContext';
+import { useSupplyChain, ProductStateLabels } from '../../Services/Contexts/SupplyChainContext';
 import './Distributor.css';
 
 /**
@@ -8,8 +7,7 @@ import './Distributor.css';
  * Shows all products currently owned by the distributor
  */
 const Inventory = () => {
-  const { isConnected } = useAuth();
-  const { isDistributor, getDistributorInventory, updateStatus } = useContract();
+  const { isConnected, isDistributor, distributor } = useSupplyChain();
   const [inventory, setInventory] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -18,9 +16,11 @@ const Inventory = () => {
 
   const loadInventory = async () => {
     setIsLoading(true);
-    const result = await getDistributorInventory();
-    if (result.success) {
-      setInventory(result.inventory);
+    try {
+      const inv = await distributor.getInventory();
+      setInventory(inv);
+    } catch (err) {
+      console.error('Error loading inventory:', err);
     }
     setIsLoading(false);
   };
@@ -33,8 +33,7 @@ const Inventory = () => {
   }, [isConnected, isDistributor]);
 
   const getStateLabel = (state) => {
-    const states = ['Created', 'Ordered', 'InTransit', 'Stored', 'Delivered'];
-    return states[parseInt(state)] || 'Unknown';
+    return ProductStateLabels[parseInt(state)] || 'Unknown';
   };
 
   const getStateBadgeClass = (state) => {
@@ -52,34 +51,37 @@ const Inventory = () => {
     setActionLoading({ ...actionLoading, [productId]: true });
     setMessage({ type: '', text: '' });
 
-    const result = await updateStatus(productId, 3, 'Product stored in warehouse');
-    
-    if (result.success) {
+    try {
+      await distributor.markAsStored(productId);
       setMessage({ type: 'success', text: 'Product marked as stored successfully!' });
       await loadInventory();
-    } else {
-      setMessage({ type: 'danger', text: result.error });
+    } catch (err) {
+      setMessage({ type: 'danger', text: err.message });
     }
 
     setActionLoading({ ...actionLoading, [productId]: false });
     setTimeout(() => setMessage({ type: '', text: '' }), 5000);
   };
 
-  const handleDeliver = async (productId) => {
-    if (!window.confirm('Are you sure you want to mark this product as delivered? This will transfer ownership to the consumer.')) {
+  const handleDeliver = async (productId, consumerAddress) => {
+    if (!consumerAddress || consumerAddress === '0x0000000000000000000000000000000000000000') {
+      setMessage({ type: 'danger', text: 'No consumer address found for this product' });
+      return;
+    }
+
+    if (!window.confirm('Are you sure you want to deliver this product? This will transfer ownership to the consumer.')) {
       return;
     }
 
     setActionLoading({ ...actionLoading, [productId]: true });
     setMessage({ type: '', text: '' });
 
-    const result = await updateStatus(productId, 4, 'Product delivered to consumer');
-    
-    if (result.success) {
+    try {
+      await distributor.deliverToConsumer(productId, consumerAddress);
       setMessage({ type: 'success', text: 'Product delivered successfully! Ownership transferred to consumer.' });
       await loadInventory();
-    } else {
-      setMessage({ type: 'danger', text: result.error });
+    } catch (err) {
+      setMessage({ type: 'danger', text: err.message });
     }
 
     setActionLoading({ ...actionLoading, [productId]: false });
@@ -218,7 +220,7 @@ const Inventory = () => {
                 {product.state === '3' && (
                   <button
                     className="btn btn-success"
-                    onClick={() => handleDeliver(product.id)}
+                    onClick={() => handleDeliver(product.id, product.orderedBy)}
                     disabled={actionLoading[product.id]}
                   >
                     {actionLoading[product.id] ? (

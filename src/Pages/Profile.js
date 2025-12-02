@@ -1,14 +1,11 @@
 import React from 'react';
-import { useAuth } from '../Services/Contexts/AuthContext';
-import { useContract } from '../Services/Contexts/ContractContext';
+import { useSupplyChain } from '../Services/Contexts/SupplyChainContext';
 
 /**
  * Profile Page
-
  */
 const Profile = () => {
-  const { account, isConnected, networkId } = useAuth();
-  const { isAdmin, isFarmer, contractOwner } = useContract();
+  const { account, isConnected, networkId, isAdmin, isFarmer, isDistributor, contractOwner, role } = useSupplyChain();
 
   if (!isConnected) {
     return (
@@ -44,11 +41,13 @@ const Profile = () => {
         <div className="card-body">
           <h5 className="card-title">Roles & Permissions</h5>
           <div className="mb-3">
-            <strong>Current Roles:</strong>
+            <strong>Current Role:</strong>
             <div className="mt-2">
               {isAdmin && <span className="badge bg-danger me-2">Admin</span>}
               {isFarmer && <span className="badge bg-success me-2">Verified Farmer</span>}
-              {!isAdmin && !isFarmer && <span className="badge bg-secondary">Consumer</span>}
+              {isDistributor && <span className="badge bg-info me-2">Distributor</span>}
+              {!isAdmin && !isFarmer && !isDistributor && <span className="badge bg-secondary">Consumer</span>}
+              <small className="text-muted ms-2">(Role: {role})</small>
             </div>
           </div>
           

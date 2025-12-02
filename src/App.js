@@ -1,7 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './Services/Contexts/AuthContext';
-import { ContractProvider } from './Services/Contexts/ContractContext';
+import { SupplyChainProvider } from './Services/Contexts/SupplyChainContext';
 import MainLayout from './Layouts/Main/MainLayout';
 import Dashboard from './Pages/Dashboard/Dashboard';
 import Products from './Pages/Products/Products';
@@ -16,6 +15,7 @@ import DeliveryQueue from './Pages/Distributor/DeliveryQueue';
 import DeliveryHistory from './Pages/Distributor/DeliveryHistory';
 import Marketplace from './Pages/Consumer/Marketplace';
 import MyOrders from './Pages/Consumer/MyOrders';
+import FarmerOrders from './Pages/Farmer/FarmerOrders';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import './App.css';
@@ -23,37 +23,40 @@ import './App.css';
 /**
  * Main App Component
  * Sets up routing and context providers
+ *
+ * Uses SupplyChainContext for unified authentication, roles, and contract interactions
  */
 function App() {
   return (
-    <AuthProvider>
-      <ContractProvider>
-        <Router>
-          <Routes>
-            <Route path="/" element={<MainLayout />}>
-              <Route index element={<Navigate to="/dashboard" replace />} />
-              <Route path="dashboard" element={<Dashboard />} />
-              <Route path="products" element={<Products />} />
-              <Route path="farmers" element={<Farmers />} />
-              <Route path="admin" element={<Admin />} />
-              <Route path="profile" element={<Profile />} />
-              <Route path="debug" element={<Debug />} />
+    <SupplyChainProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<MainLayout />}>
+            <Route index element={<Navigate to="/dashboard" replace />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="products" element={<Products />} />
+            <Route path="farmers" element={<Farmers />} />
+            <Route path="admin" element={<Admin />} />
+            <Route path="profile" element={<Profile />} />
+            <Route path="debug" element={<Debug />} />
 
-              {/* Distributor Routes */}
-              <Route path="distributor" element={<Distributor />} />
-              <Route path="distributor/inventory" element={<Inventory />} />
-              <Route path="distributor/received" element={<ReceivedProducts />} />
-              <Route path="distributor/delivery-queue" element={<DeliveryQueue />} />
-              <Route path="distributor/history" element={<DeliveryHistory />} />
+            {/* Farmer Routes */}
+            <Route path="farmer/orders" element={<FarmerOrders />} />
 
-              {/* Consumer Routes */}
-              <Route path="marketplace" element={<Marketplace />} />
-              <Route path="my-orders" element={<MyOrders />} />
-            </Route>
-          </Routes>
-        </Router>
-      </ContractProvider>
-    </AuthProvider>
+            {/* Distributor Routes */}
+            <Route path="distributor" element={<Distributor />} />
+            <Route path="distributor/inventory" element={<Inventory />} />
+            <Route path="distributor/received" element={<ReceivedProducts />} />
+            <Route path="distributor/delivery-queue" element={<DeliveryQueue />} />
+            <Route path="distributor/history" element={<DeliveryHistory />} />
+
+            {/* Consumer Routes */}
+            <Route path="marketplace" element={<Marketplace />} />
+            <Route path="my-orders" element={<MyOrders />} />
+          </Route>
+        </Routes>
+      </Router>
+    </SupplyChainProvider>
   );
 }
 

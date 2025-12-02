@@ -1,6 +1,5 @@
 import React from 'react';
-import { useAuth } from '../../Services/Contexts/AuthContext';
-import { useContract } from '../../Services/Contexts/ContractContext';
+import { useSupplyChain } from '../../Services/Contexts/SupplyChainContext';
 import { Link } from 'react-router-dom';
 import './Dashboard.css';
 
@@ -8,8 +7,7 @@ import './Dashboard.css';
  * Dashboard Page
  */
 const Dashboard = () => {
-  const { account, isConnected } = useAuth();
-  const { isAdmin, isFarmer, isDistributor } = useContract();
+  const { account, isConnected, isAdmin, isFarmer, isDistributor } = useSupplyChain();
 
   if (!isConnected) {
     return (
@@ -67,6 +65,21 @@ const Dashboard = () => {
                 <p className="card-text">Register a new product to the blockchain</p>
                 <Link to="/products" className="btn btn-success">
                   Register Now
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {isFarmer && (
+          <div className="col-md-4 mb-3">
+            <div className="card h-100">
+              <div className="card-body text-center">
+                <i className="bi bi-cart-check fs-1 text-warning"></i>
+                <h5 className="card-title mt-3">My Orders</h5>
+                <p className="card-text">View orders and transfer to distributors</p>
+                <Link to="/farmer/orders" className="btn btn-warning">
+                  View Orders
                 </Link>
               </div>
             </div>
