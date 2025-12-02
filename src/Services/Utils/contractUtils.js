@@ -90,7 +90,8 @@ export const getProduct = async (productId) => {
       origin: product[3],
       isAuthentic: product[4],
       state: product[5],
-      ipfsHash: product[6]
+      ipfsHash: product[6],
+      orderedBy: product[7]
     };
   } catch (error) {
     console.error('Error getting product:', error);
@@ -99,14 +100,45 @@ export const getProduct = async (productId) => {
 };
 
 /**
- * Get product ownership history
+ * Get product ownership history from events
  * @param {number} productId - Product ID
  * @returns {Array} Array of owner addresses
  */
 export const getProductHistory = async (productId) => {
   try {
     const contract = getContract();
-    const history = await contract.methods.getProductHistory(productId).call();
+
+    // Get registration event (first owner)
+    const registrationEvents = await contract.getPastEvents('ProductRegistered', {
+      filter: { productId: productId },
+      fromBlock: 0,
+      toBlock: 'latest'
+    });
+
+    // Get transfer events (subsequent owners)
+    const transferEvents = await contract.getPastEvents('OwnershipTransferred', {
+      filter: { productId: productId },
+      fromBlock: 0,
+      toBlock: 'latest'
+    });
+
+    let history = [];
+
+    // Add initial owner (Farmer)
+    if (registrationEvents.length > 0) {
+      // Sort by block number just in case, though usually one registration per ID
+      registrationEvents.sort((a, b) => a.blockNumber - b.blockNumber);
+      history.push(registrationEvents[0].returnValues.farmer);
+    }
+
+    // Sort transfers by block number
+    transferEvents.sort((a, b) => a.blockNumber - b.blockNumber);
+
+    // Add subsequent owners
+    transferEvents.forEach(event => {
+      history.push(event.returnValues.to);
+    });
+
     return history;
   } catch (error) {
     console.error('Error getting product history:', error);
